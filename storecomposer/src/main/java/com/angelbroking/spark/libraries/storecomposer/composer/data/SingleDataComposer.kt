@@ -1,0 +1,48 @@
+package com.angelbroking.spark.libraries.storecomposer.composer.data
+
+import com.angelbroking.spark.libraries.storecomposer.state.UIState
+import com.angelbroking.spark.libraries.storecomposer.store.StoreInitObj
+
+/**
+ * [DataComposer] variant for screens with a single widget.
+ *
+ * SingleDataComposer manages exactly one [Store] and is optimized for
+ * simple screens that don't need list-based state management.
+ *
+ * ## Use Cases
+ * - Detail screens with one main widget
+ * - Simple form screens
+ * - Settings panels with a single configuration widget
+ *
+ * ## Usage
+ * ```kotlin
+ * // ViewModel
+ * class DetailViewModel @Inject constructor(
+ *     storeFactory: DetailStoreFactory
+ * ) : ViewModel(), SingleDataComposerHost<DetailState, DetailInitModel, DetailWidgetModel> {
+ *
+ *     override val container: SingleDataComposer<...> by lazy {
+ *         singleDataComposer(storeFactory, viewModelScope, actionHandler)
+ *     }
+ *
+ *     fun init(itemId: String) {
+ *         viewModelScope.launch {
+ *             container.init(listOf(DetailWidgetId), DetailInitModel(itemId))
+ *         }
+ *     }
+ * }
+ *
+ * // Fragment - observe single state
+ * container.observeState(lifecycleScope) { state ->
+ *     renderDetail(state)
+ * }
+ * ```
+ *
+ * ## State Observation
+ * Use [SingleDataComposerHostSyntax.observeState] for convenient single-state observation.
+ *
+ * @see DataComposer
+ * @see ListDataComposer
+ * @see SingleDataComposerHost
+ */
+interface SingleDataComposer<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODEL: StoreInitObj>: DataComposer<UISTATE, INITOBJ, STOREMODEL>
