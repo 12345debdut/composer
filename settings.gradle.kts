@@ -21,5 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "composer-library"
 include(":app")
-include(":storecomposer")
+include(":composer")
  
