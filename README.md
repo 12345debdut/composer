@@ -437,43 +437,41 @@ abstract class Store<UISTATE: UIState, INITMODEL: StoreInitObj, STOREMODEL: Stor
 
 **Usage Example**:
 ```kotlin
-class QuantityWidgetStore @Inject constructor(
-    private val formSession: OrderFormSession
-) : Store<QuantityState, OrderInitModel, OrderWidgetModel>() {
+class InputWidgetStore @Inject constructor() : Store<InputState, InitModel, WidgetModel>() {
 
-    override val storeId: StoreId = QuantityStoreId
+    override val storeId: StoreId = InputStoreId
     
     override val subscribedStoreAction: Set<ActionId> = setOf(
-        QuantityIncrementActionId,
-        QuantityDecrementActionId,
-        QuantityInputChangedActionId
+        InputIncrementActionId,
+        InputDecrementActionId,
+        InputChangedActionId
     )
 
-    override fun initialise(globalModel: OrderInitModel) {
+    override fun initialise(globalModel: InitModel) {
         emitState {
-            QuantityState(
-                quantity = globalModel.defaultQuantity,
-                minQuantity = 1,
-                maxQuantity = globalModel.maxAllowed
+            InputState(
+                input = globalModel.defaultInput,
+                minInput = 1,
+                maxInput = globalModel.maxAllowed
             )
         }
     }
 
     override suspend fun receive(action: StoreAction, storeId: StoreId) {
         when (action) {
-            is QuantityIncrementAction -> {
+            is InputIncrementAction -> {
                 updateState {
-                    copy(quantity = (quantity + 1).coerceAtMost(maxQuantity))
+                    copy(input = (input + 1).coerceAtMost(maxinput))
                 }
             }
-            is QuantityDecrementAction -> {
+            is InputDecrementAction -> {
                 updateState {
-                    copy(quantity = (quantity - 1).coerceAtLeast(minQuantity))
+                    copy(input = (input - 1).coerceAtLeast(minQinput))
                 }
             }
-            is QuantityInputChangedAction -> {
+            is InputInputChangedAction -> {
                 updateState {
-                    copy(quantity = action.newValue.coerceIn(minQuantity, maxQuantity))
+                    copy(input = action.newValue.coerceIn(mininput, maxinput))
                 }
             }
         }
@@ -517,10 +515,10 @@ interface StoreInitObj
 
 **Usage Example**:
 ```kotlin
-data class OrderPadInitModel(
+data class InitModel(
     val symbol: String,
     val transactionType: TransactionType,
-    val defaultQuantity: Int
+    val defaultInput: Int
 ) : StoreInitObj
 ```
 
@@ -546,19 +544,17 @@ interface StoreFactory<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODEL: Stor
 
 **Usage Example**:
 ```kotlin
-class OrderPadStoreFactoryImpl @Inject constructor(
+class StoreFactoryImpl @Inject constructor(
     private val headerStore: HeaderWidgetStore,
-    private val quantityStore: QuantityWidgetStore,
-    private val priceStore: PriceWidgetStore
-) : StoreFactory<OrderPadState, OrderPadInitModel, OrderWidgetModel> {
+    private val inputStore: InputWidgetStore,
+) : StoreFactory<State, InitModel, WidgetModel> {
 
-    private val storeMap: Map<WidgetId, Store<OrderPadState, OrderPadInitModel, OrderWidgetModel>> = mapOf(
+    private val storeMap: Map<WidgetId, Store<State, InitModel, WidgetModel>> = mapOf(
         HeaderWidgetId to headerStore,
-        QuantityWidgetId to quantityStore,
-        PriceWidgetId to priceStore
+        inputWidgetId to inputStore,
     )
 
-    override fun get(widgetId: WidgetId): Store<OrderPadState, OrderPadInitModel, OrderWidgetModel> {
+    override fun get(widgetId: WidgetId): Store<State, InitModel, WidgetModel> {
         return storeMap[widgetId] 
             ?: throw IllegalArgumentException("Unknown widget: $widgetId")
     }
@@ -707,7 +703,7 @@ interface DataComposerActionHandler {
 
 **Usage Example**:
 ```kotlin
-class OrderPadViewModel : ListDataComposerViewModel<...>(...), DataComposerActionHandler {
+class ViewModel : ListDataComposerViewModel<...>(...), DataComposerActionHandler {
     
     override val dataComposerActionHandler: DataComposerActionHandler = this
     
