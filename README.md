@@ -1,34 +1,138 @@
-# StoreComposer Module Documentation
+# Composer Library
+
+<div align="center">
+
+**A modern, unidirectional state management library for Android applications**
+
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-blue.svg)](https://kotlinlang.org)
+[![Android](https://img.shields.io/badge/Android-24+-green.svg)](https://developer.android.com)
+[![Version](https://img.shields.io/badge/Version-1.0.0-orange.svg)](https://github.com/12345debdut/composer)
+[![License](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+
+[Overview](#-overview) • [Architecture](#️-architecture) • [Installation](#-installation) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [License](#-license)
+
+</div>
+
+---
+
+## 🚀 Add to Your Project
+
+### Dependency
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation("com.debdut.library:composer:1.0.0")
+}
+```
+
+```groovy
+// build.gradle
+dependencies {
+    implementation 'com.debdut.library:composer:1.0.0'
+}
+```
+
+### Repository
+
+Add to `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/12345debdut/composer")
+            credentials {
+                username = project.findProperty("GITHUB_USER") as String? ?: System.getenv("GITHUB_USER")
+                password = project.findProperty("GITHUB_TOKEN") as String? ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
+```
+
+> ⚠️ **Note:** You'll need a GitHub Personal Access Token with `read:packages` permission. See [Installation Guide](#-installation) for detailed setup.
+
+---
+
+# Composer Module Documentation
 
 ## Table of Contents
-1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Module Structure](#module-structure)
-4. [Core Concepts](#core-concepts)
-5. [File Documentation](#file-documentation)
-6. [Usage Examples](#usage-examples)
-7. [Best Practices](#best-practices)
+1. [Overview](#-overview)
+2. [Architecture](#️-architecture)
+3. [Installation](#-installation)
+4. [Quick Start](#-quick-start)
+5. [Core Concepts](#-core-concepts)
+6. [File Documentation](#-file-documentation)
+7. [Usage Examples](#-usage-examples)
+8. [Best Practices](#-best-practices)
 
 ---
 
-## Overview
+## 📦 Dependency Information
 
-The **StoreComposer** module is a state management library that implements a unidirectional data flow architecture for Android applications. It provides a structured way to manage UI state across multiple widgets/components with support for:
+### Version
 
-- **Store-based state management**: Each widget has its own Store that manages its state
-- **Composable architecture**: Multiple stores can be composed together
-- **Action-based communication**: Actions flow between UI, Stores, and Composers
+**Current Version:** `1.0.0`
+
+### Maven Coordinates
+
+```
+Group ID:    com.debdut.library
+Artifact ID: composer
+Version:     1.0.0
+```
+
+### Repository
+
+```
+https://maven.pkg.github.com/12345debdut/composer
+```
+
+### Requirements
+
+- **Minimum SDK:** 24
+- **Kotlin:** 1.9+
+- **Gradle:** 8.0+
+
+> 📖 **See [Installation Guide](#-installation) below for complete setup instructions with authentication**
+
+---
+
+## 📖 Overview
+
+**Composer** is a state management library that implements a unidirectional data flow architecture for Android applications. It provides a structured, scalable approach to managing UI state across multiple widgets and components using a Store-based pattern with reactive state updates via Kotlin Flows.
+
+### What is Composer?
+
+Composer solves the challenge of building complex Android screens with multiple interactive widgets by providing:
+
+- **Store-based state management**: Each widget has its own isolated Store that manages its state
+- **Composable architecture**: Multiple stores can be composed together seamlessly
+- **Action-based communication**: Type-safe actions flow between UI, Stores, and Composers
 - **Reactive state updates**: Uses Kotlin Flows for reactive state propagation
+- **Unidirectional data flow**: Actions flow down, state flows up (predictable and debuggable)
+- **Lifecycle-aware**: Automatic lifecycle management for UI observation
+- **Easy testing**: Business logic in Stores is easily testable in isolation
 
 ### Key Benefits
-- Decoupled widget state management
-- Predictable state updates through actions
-- Easy testing of business logic
-- Scalable architecture for complex screens with multiple widgets
+
+- ✅ **Decoupled widget state management** - Each widget's state is independent
+- ✅ **Predictable state updates** - Unidirectional flow ensures traceable changes
+- ✅ **Scalable architecture** - Perfect for complex screens with multiple widgets
+- ✅ **Type-safe actions** - Compile-time safety for all state changes
+- ✅ **Reactive by design** - Built on Kotlin Flows for modern reactive programming
+- ✅ **Testable** - Stores can be tested independently without UI dependencies
 
 ---
 
-## Architecture
+## 🏗️ Architecture
+
+Composer follows a unidirectional data flow pattern with three main layers:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -71,1097 +175,635 @@ The **StoreComposer** module is a state management library that implements a uni
 
 ### Data Flow
 
+The unidirectional data flow ensures predictable state management:
+
 1. **User Interaction** → UI dispatches `StoreAction`
 2. **Action Routing** → DataComposer routes action to appropriate Store(s)
 3. **State Update** → Store processes action and updates its state
 4. **State Emission** → New state flows back through DataComposer
 5. **UI Update** → UIComposer receives combined state and renders UI
 
----
+### Key Components
 
-## Module Structure
-
-```
-storecomposer/
-├── action/                          # Action definitions
-│   ├── Action.kt                    # Base action interface
-│   ├── ActionId.kt                  # Action identifier interface
-│   ├── ComposerAction.kt            # Composer-level actions
-│   ├── DataComposerAction.kt        # Data composer actions
-│   ├── StoreAction.kt               # Store-level actions
-│   ├── UIComposerAction.kt          # UI composer actions
-│   └── holder/                      # Action wrappers
-│       ├── ActionHolder.kt          # Base action holder
-│       ├── DataComposerActionHolder.kt
-│       ├── StoreActionHolder.kt
-│       └── UIComposerActionHolder.kt
-│
-├── composer/                        # Composer implementations
-│   ├── Composer.kt                  # Base composer interface
-│   ├── data/                        # Data composers
-│   │   ├── DataComposer.kt          # Base data composer
-│   │   ├── DataComposerActionHandler.kt
-│   │   ├── SingleDataComposer.kt
-│   │   ├── ListDataComposer.kt
-│   │   ├── ListWithHeaderAndFooterDataComposer.kt
-│   │   ├── host/                    # Composer hosts
-│   │   │   ├── DataComposerHost.kt
-│   │   │   ├── SingleDataComposerHost.kt
-│   │   │   ├── ListDataComposerHost.kt
-│   │   │   └── ListWithHeaderAndFooterDataComposerHost.kt
-│   │   ├── impl/                    # Implementations
-│   │   │   ├── SingleDataComposerImpl.kt
-│   │   │   ├── ListDataComposerImpl.kt
-│   │   │   ├── ListWithHeaderFooterDataComposerImpl.kt
-│   │   │   └── IntermediateWidgetStoreModel.kt
-│   │   ├── model/
-│   │   │   └── StoreActionWidgetIdPair.kt
-│   │   └── syntax/                  # Extension functions
-│   │       ├── DataComposerHostSyntax.kt
-│   │       ├── SingleDataComposerHostSyntax.kt
-│   │       └── ListWithHeaderAndFooterDataComposerHostSyntax.kt
-│   └── ui/                          # UI composers
-│       ├── UIComposer.kt
-│       ├── SingleUIComposer.kt
-│       ├── ListUIComposer.kt
-│       ├── ListUIComposerWithHeaderAndFooter.kt
-│       ├── WidgetId.kt
-│       ├── HostWidgetId.kt
-│       ├── ChildWidgetId.kt
-│       ├── NoStoreWidgetId.kt
-│       ├── GroupWidget.kt
-│       └── syntax/
-│           ├── UIComposerSyntax.kt
-│           └── ListUIComposerWithHeaderAndFooterSyntax.kt
-│
-├── extensions/                      # Helper extensions
-│   ├── CoroutineExtensions.kt       # Coroutine utilities
-│   └── HostExtensions.kt            # Factory functions
-│
-├── state/                           # State definitions
-│   ├── UIState.kt                   # Base UI state interface
-│   ├── UIStateType.kt               # State type markers
-│   ├── HeaderUIStateType.kt         # Header state marker
-│   ├── FooterUIStateType.kt         # Footer state marker
-│   └── NoOpsUIState.kt              # No-op state implementation
-│
-├── store/                           # Store layer
-│   ├── Store.kt                     # Base store class
-│   ├── StoreId.kt                   # Store identifier
-│   ├── StoreInitObj.kt              # Initialization object
-│   ├── StoreWidgetModel.kt          # Widget model interface
-│   ├── factory/
-│   │   └── StoreFactory.kt          # Store factory interface
-│   └── syntax/
-│       └── StoreSyntax.kt           # Store extension functions
-│
-├── uicomponents/                    # UI components
-│   ├── ListUIComposerFragment.kt
-│   └── ListUIComposerWithHeaderAndFooterFragment.kt
-│
-└── viewmodel/                       # ViewModel implementations
-    ├── ListDataComposerViewModel.kt
-    └── ListWithHeaderAndFooterDataComposerViewModel.kt
-```
+- **Store**: Manages state for a single widget, processes actions
+- **DataComposer**: Orchestrates multiple Stores, combines their states
+- **UIComposer**: Lifecycle-aware wrapper for UI layer integration
+- **Actions**: Immutable data classes describing "what happened"
+- **UIState**: Immutable state objects representing widget state
 
 ---
 
-## Core Concepts
+## 🚀 Installation
 
-### 1. Actions
-Actions are the primary way to communicate between layers. They are immutable data classes that describe "what happened".
+This guide will walk you through adding Composer library to your Android project.
 
-### 2. Stores
-Stores are self-contained business units that manage the state for a single widget. Each Store has:
-- A unique `StoreId`
-- A `UIState` it manages
-- A set of `subscribedStoreAction` it responds to
+### Prerequisites
 
-### 3. Composers
-Composers orchestrate multiple Stores, combining their states and routing actions appropriately.
+- Android Studio (latest version recommended)
+- Minimum SDK: 24
+- Kotlin 1.9+
+- Gradle 8.0+
 
-### 4. WidgetIds
-Widget identifiers that link UI components to their corresponding Stores.
+### Quick Setup
 
----
-
-## File Documentation
-
-### Action Package
-
-#### `Action.kt`
+**Dependency:**
 ```kotlin
-interface Action {
-    val actionId: ActionId
-}
-```
-**Purpose**: Base interface for all actions in the system. Every action must have a unique identifier.
-
-**Usage Example**:
-```kotlin
-// Define an action
-data class MyCustomAction(
-    val data: String,
-    override val actionId: ActionId = MyCustomActionId
-) : StoreAction
-
-// Define the action ID
-object MyCustomActionId : ActionId {
-    override val id: String = "my_custom_action"
-}
+implementation("com.debdut.library:composer:1.0.0")
 ```
 
----
+**Repository:** `https://maven.pkg.github.com/12345debdut/composer`
 
-#### `ActionId.kt`
+### Step 1: Add GitHub Packages Repository
+
+Add the repository to your project's `settings.gradle.kts` (or `settings.gradle`):
+
+**For Kotlin DSL (`settings.gradle.kts`):**
+
 ```kotlin
-interface ActionId {
-    val id: String
-}
-```
-**Purpose**: Identifies actions uniquely. Used by Stores to filter which actions they respond to.
-
-**Usage Example**:
-```kotlin
-object RefreshDataActionId : ActionId {
-    override val id: String = "refresh_data"
-}
-```
-
----
-
-#### `ComposerAction.kt`
-```kotlin
-interface ComposerAction: Action
-```
-**Purpose**: Marker interface for actions that are processed by composers (not stores). This is the parent of both `DataComposerAction` and `UIComposerAction`.
-
----
-
-#### `DataComposerAction.kt`
-```kotlin
-interface DataComposerAction: ComposerAction
-```
-**Purpose**: Actions that are handled by the DataComposer layer. Used for cross-widget communication or data-layer operations.
-
-**Usage Example**:
-```kotlin
-data class UpdateAllWidgetsAction(
-    val newData: GlobalData,
-    override val actionId: ActionId = UpdateAllWidgetsActionId
-) : DataComposerAction
-```
-
----
-
-#### `StoreAction.kt`
-```kotlin
-interface StoreAction: Action
-```
-**Purpose**: Actions that are dispatched to and handled by Stores. The most common action type.
-
-**Usage Example**:
-```kotlin
-data class ButtonClickedAction(
-    val buttonId: String,
-    override val actionId: ActionId = ButtonClickedActionId
-) : StoreAction
-```
-
----
-
-#### `UIComposerAction.kt`
-```kotlin
-interface UIComposerAction: ComposerAction
-```
-**Purpose**: Actions that bubble up to the UI layer. Used for navigation, showing dialogs, toasts, etc.
-
-**Usage Example**:
-```kotlin
-data class ShowToastAction(
-    val message: String,
-    override val actionId: ActionId = ShowToastActionId
-) : UIComposerAction
-```
-
----
-
-### Action Holder Package
-
-#### `ActionHolder.kt`
-```kotlin
-interface ActionHolder {
-    val action: Action
-    val storeId: StoreId
-}
-```
-**Purpose**: Wrapper that pairs an action with the store that dispatched it. Useful for tracking the origin of actions.
-
----
-
-#### `DataComposerActionHolder.kt`
-```kotlin
-data class DataComposerActionHolder(
-    override val action: DataComposerAction,
-    override val storeId: StoreId = StoreId.Empty
-): ActionHolder
-```
-**Purpose**: Holds DataComposerActions along with the originating store ID.
-
----
-
-#### `StoreActionHolder.kt`
-```kotlin
-data class StoreActionHolder(
-    override val action: StoreAction,
-    override val storeId: StoreId
-): ActionHolder
-```
-**Purpose**: Holds StoreActions with their originating store.
-
----
-
-#### `UIComposerActionHolder.kt`
-```kotlin
-data class UIComposerActionHolder(
-    override val action: UIComposerAction,
-    override val storeId: StoreId
-): ActionHolder
-```
-**Purpose**: Wraps UI actions with store context. Used by UI layer to handle side effects.
-
-**Usage Example**:
-```kotlin
-// In Fragment
-fun handleUIAction(actionHolder: UIComposerActionHolder) {
-    when (val action = actionHolder.action) {
-        is ShowToastAction -> showToast(action.message)
-        is NavigateAction -> navigateTo(action.destination)
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/12345debdut/composer")
+            credentials {
+                username = project.findProperty("GITHUB_USER") as String? ?: System.getenv("GITHUB_USER")
+                password = project.findProperty("GITHUB_TOKEN") as String? ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
 ```
 
----
+**For Groovy DSL (`settings.gradle`):**
 
-### State Package
-
-#### `UIState.kt`
-```kotlin
-interface UIState {
-    val type: UIStateType
-    val visible: Boolean
-    val widgetId: WidgetId
+```groovy
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/12345debdut/composer")
+            credentials {
+                username = project.findProperty("GITHUB_USER") ?: System.getenv("GITHUB_USER")
+                password = project.findProperty("GITHUB_TOKEN") ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 }
 ```
-**Purpose**: Base interface for all UI states. Every widget state must implement this.
 
-**Properties**:
-- `type`: Categorizes the state (default, header, footer)
-- `visible`: Controls widget visibility
-- `widgetId`: Links state to its widget
+### Step 2: Add Dependency
 
-**Usage Example**:
+Add the dependency to your module's `build.gradle.kts` (or `build.gradle`):
+
+**For Kotlin DSL (`build.gradle.kts`):**
+
 ```kotlin
-data class HeaderWidgetState(
-    override val type: UIStateType = UIStateDefaultType,
+dependencies {
+    implementation("com.debdut.library:composer:1.0.0")
+}
+```
+
+**For Groovy DSL (`build.gradle`):**
+
+```groovy
+dependencies {
+    implementation 'com.debdut.library:composer:1.0.0'
+}
+```
+
+### Step 3: Configure Authentication
+
+You'll need a GitHub Personal Access Token with `read:packages` permission to access the package.
+
+#### Create a GitHub Personal Access Token
+
+1. Go to [GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)](https://github.com/settings/tokens)
+2. Click "Generate new token (classic)"
+3. Give it a descriptive name (e.g., "Composer Library Access")
+4. Select the `read:packages` scope
+5. Click "Generate token"
+6. **Copy the token immediately** - you won't be able to see it again!
+
+#### Configure Credentials
+
+You have three options for providing credentials:
+
+**Option 1: Using `local.properties` (Recommended for local development)**
+
+Create or edit `local.properties` in your project root:
+
+```properties
+GITHUB_USER=your-github-username
+GITHUB_TOKEN=ghp_your_personal_access_token_here
+```
+
+**Note:** `local.properties` is typically already in `.gitignore`, so your token won't be committed.
+
+**Option 2: Using Environment Variables**
+
+Set environment variables in your system:
+
+**On macOS/Linux:**
+```bash
+export GITHUB_USER=your-github-username
+export GITHUB_TOKEN=ghp_your_personal_access_token_here
+```
+
+**On Windows (PowerShell):**
+```powershell
+$env:GITHUB_USER="your-github-username"
+$env:GITHUB_TOKEN="ghp_your_personal_access_token_here"
+```
+
+**On Windows (Command Prompt):**
+```cmd
+set GITHUB_USER=your-github-username
+set GITHUB_TOKEN=ghp_your_personal_access_token_here
+```
+
+**Option 3: Using Gradle Properties**
+
+Add to your `gradle.properties` file in the project root:
+
+```properties
+GITHUB_USER=your-github-username
+GITHUB_TOKEN=ghp_your_personal_access_token_here
+```
+
+**⚠️ Warning:** If using `gradle.properties`, make sure it's in `.gitignore` to avoid committing your token.
+
+### Step 4: Sync Project
+
+After adding the dependency and configuring credentials:
+
+1. Click "Sync Now" in Android Studio, or
+2. Run `./gradlew build --refresh-dependencies` from the command line
+
+### Troubleshooting Installation
+
+If you encounter issues:
+
+- **401 Unauthorized**: Check that your `GITHUB_TOKEN` has `read:packages` permission
+- **404 Not Found**: Verify the repository URL and that the package exists
+- **Dependency not found**: Ensure credentials are set correctly in `local.properties` or environment variables
+
+See [Troubleshooting Guide](./TROUBLESHOOTING.md) for more help.
+
+---
+
+## 🎯 Quick Start
+
+### 1. Define Your State
+
+Create a data class that implements `UIState`:
+
+```kotlin
+import com.debdut.library.composer.state.UIState
+import com.debdut.library.composer.state.UIStateType
+import com.debdut.library.composer.state.UIStateDefaultType
+import com.debdut.library.composer.composer.ui.WidgetId
+
+// Define Widget ID
+object CounterWidgetId : WidgetId {
+    override val id: String = "counter_widget"
+}
+
+// Define State
+data class CounterState(
+    override val widgetId: WidgetId = CounterWidgetId,
     override val visible: Boolean = true,
-    override val widgetId: WidgetId = HeaderWidgetId,
-    val title: String = "",
-    val subtitle: String = "",
-    val showBackButton: Boolean = true
+    override val type: UIStateType = UIStateDefaultType,
+    val count: Int = 0
 ) : UIState
 ```
 
----
+### 2. Create Actions
 
-#### `UIStateType.kt`
+Define actions that will trigger state changes:
+
 ```kotlin
-interface UIStateType
+import com.debdut.library.composer.action.ActionId
+import com.debdut.library.composer.action.StoreAction
 
-data object UIStateDefaultType: UIStateType
-```
-**Purpose**: Marker interface for categorizing states. The default implementation is `UIStateDefaultType`.
-
----
-
-#### `HeaderUIStateType.kt`
-```kotlin
-interface HeaderUIStateType: UIStateType
-```
-**Purpose**: Marker for header states. When using `ListWithHeaderAndFooterDataComposer`, states with this type are automatically separated into the header stream.
-
----
-
-#### `FooterUIStateType.kt`
-```kotlin
-interface FooterUIStateType: UIStateType
-```
-**Purpose**: Marker for footer states. States with this type go to the footer stream.
-
----
-
-#### `NoOpsUIState.kt`
-```kotlin
-data class NoOpsUIState(
-    override val type: UIStateType,
-    override val visible: Boolean = true,
-    override val widgetId: WidgetId
-): UIState
-```
-**Purpose**: A simple UIState implementation for widgets that don't need a store (static content).
-
----
-
-### Store Package
-
-#### `Store.kt`
-```kotlin
-abstract class Store<UISTATE: UIState, INITMODEL: StoreInitObj, STOREMODEL: StoreInitObj> {
-    abstract val storeId: StoreId
-    abstract val subscribedStoreAction: Set<ActionId>
-    
-    abstract fun initialise(globalModel: INITMODEL)
-    abstract suspend fun receive(action: StoreAction, storeId: StoreId)
-    open fun invokeOnStateUpdate(prevState: UISTATE?, currentState: UISTATE?) {}
-    open fun clear() {}
-    open fun reset() {}
+// Define Action ID
+object IncrementActionId : ActionId {
+    override val id: String = "increment"
 }
+
+object DecrementActionId : ActionId {
+    override val id: String = "decrement"
+}
+
+// Define Actions
+data class IncrementAction(
+    val amount: Int = 1,
+    override val actionId: ActionId = IncrementActionId
+) : StoreAction
+
+data class DecrementAction(
+    val amount: Int = 1,
+    override val actionId: ActionId = DecrementActionId
+) : StoreAction
 ```
-**Purpose**: The core business unit that manages state for a single widget.
 
-**Key Concepts**:
-- `storeId`: Unique identifier for this store
-- `subscribedStoreAction`: Set of action IDs this store responds to
-- `initialise()`: Called to set up initial state
-- `receive()`: Called when an action is dispatched to this store
+### 3. Create a Store
 
-**Usage Example**:
+Implement a Store to manage your widget's state:
+
 ```kotlin
-class InputWidgetStore @Inject constructor() : Store<InputState, InitModel, WidgetModel>() {
+import com.debdut.library.composer.store.Store
+import com.debdut.library.composer.store.StoreId
+import com.debdut.library.composer.store.StoreInitObj
+import com.debdut.library.composer.store.StoreWidgetModel
+import com.debdut.library.composer.action.ActionId
+import com.debdut.library.composer.action.StoreAction
 
-    override val storeId: StoreId = InputStoreId
+// Define Store ID
+object CounterStoreId : StoreId {
+    override val id: String = "counter_store"
+}
+
+// Define Init Model
+data class InitModel : StoreInitObj
+
+// Define Widget Model
+data class WidgetModel : StoreWidgetModel {
+    override val widgetId: String = CounterWidgetId.id
+}
+
+// Create Store
+class CounterStore : Store<CounterState, InitModel, WidgetModel>() {
+    
+    override val storeId: StoreId = CounterStoreId
     
     override val subscribedStoreAction: Set<ActionId> = setOf(
-        InputIncrementActionId,
-        InputDecrementActionId,
-        InputChangedActionId
+        IncrementActionId,
+        DecrementActionId
     )
-
+    
     override fun initialise(globalModel: InitModel) {
         emitState {
-            InputState(
-                input = globalModel.defaultInput,
-                minInput = 1,
-                maxInput = globalModel.maxAllowed
-            )
+            CounterState(count = 0)
         }
     }
-
-    override suspend fun receive(action: StoreAction, storeId: StoreId) {
-        when (action) {
-            is InputIncrementAction -> {
-                updateState {
-                    copy(input = (input + 1).coerceAtMost(maxinput))
-                }
-            }
-            is InputDecrementAction -> {
-                updateState {
-                    copy(input = (input - 1).coerceAtLeast(minQinput))
-                }
-            }
-            is InputInputChangedAction -> {
-                updateState {
-                    copy(input = action.newValue.coerceIn(mininput, maxinput))
-                }
-            }
-        }
-    }
-}
-```
-
----
-
-#### `StoreId.kt`
-```kotlin
-interface StoreId {
-    val id: String
-    companion object {
-        val Empty = object : StoreId {
-            override val id: String = ""
-        }
-    }
-}
-```
-**Purpose**: Uniquely identifies a store. Used for targeted action dispatch.
-
-**Usage Example**:
-```kotlin
-object HeaderStoreId : StoreId {
-    override val id: String = "header_store"
-}
-
-object PriceStoreId : StoreId {
-    override val id: String = "price_store"
-}
-```
-
----
-
-#### `StoreInitObj.kt`
-```kotlin
-interface StoreInitObj
-```
-**Purpose**: Marker interface for initialization data passed to stores.
-
-**Usage Example**:
-```kotlin
-data class InitModel(
-    val symbol: String,
-    val transactionType: TransactionType,
-    val defaultInput: Int
-) : StoreInitObj
-```
-
----
-
-#### `StoreWidgetModel.kt`
-```kotlin
-interface StoreWidgetModel {
-    val widgetId: String
-}
-```
-**Purpose**: Interface for models that can be identified by a widget ID.
-
----
-
-#### `StoreFactory.kt`
-```kotlin
-interface StoreFactory<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODEL: StoreInitObj> {
-    fun get(widgetId: WidgetId): Store<UISTATE, INITOBJ, STOREMODEL>
-}
-```
-**Purpose**: Factory pattern for creating stores based on widget IDs.
-
-**Usage Example**:
-```kotlin
-class StoreFactoryImpl @Inject constructor(
-    private val headerStore: HeaderWidgetStore,
-    private val inputStore: InputWidgetStore,
-) : StoreFactory<State, InitModel, WidgetModel> {
-
-    private val storeMap: Map<WidgetId, Store<State, InitModel, WidgetModel>> = mapOf(
-        HeaderWidgetId to headerStore,
-        inputWidgetId to inputStore,
-    )
-
-    override fun get(widgetId: WidgetId): Store<State, InitModel, WidgetModel> {
-        return storeMap[widgetId] 
-            ?: throw IllegalArgumentException("Unknown widget: $widgetId")
-    }
-}
-```
-
----
-
-#### `StoreSyntax.kt`
-Extension functions for Store operations:
-
-```kotlin
-// Update state with transformation
-fun Store<...>.updateState(block: UISTATE.() -> UISTATE?): UISTATE?
-
-// Get current state
-val Store<...>.currentState: UISTATE?
-
-// Emit a new state
-fun Store<...>.emitState(block: () -> UISTATE)
-
-// Get the coroutine scope
-val Store<...>.storeScope: CoroutineScope
-
-// Dispatch action (suspending)
-suspend fun Store<...>.suspendDispatch(action: ComposerAction)
-
-// Dispatch action (non-suspending)
-fun Store<...>.dispatch(action: ComposerAction): Boolean
-
-// Send action to this store
-suspend fun Store<...>.send(action: StoreAction)
-suspend fun Store<...>.send(action: StoreAction, storeId: StoreId)
-```
-
-**Usage Example**:
-```kotlin
-class MyStore : Store<MyState, InitModel, WidgetModel>() {
     
     override suspend fun receive(action: StoreAction, storeId: StoreId) {
         when (action) {
-            is UpdateDataAction -> {
-                // Update state using the copy pattern
+            is IncrementAction -> {
                 updateState {
-                    copy(data = action.newData, isLoading = false)
+                    copy(count = count + action.amount)
                 }
             }
-            is LoadMoreAction -> {
-                // Access current state
-                val current = currentState ?: return
-                
-                // Launch coroutine in store scope
-                storeScope.launch {
-                    val moreData = repository.loadMore(current.page + 1)
-                    updateState {
-                        copy(items = items + moreData, page = page + 1)
-                    }
+            is DecrementAction -> {
+                updateState {
+                    copy(count = (count - action.amount).coerceAtLeast(0))
                 }
-            }
-            is NotifyParentAction -> {
-                // Dispatch to parent composer
-                suspendDispatch(DataLoadedComposerAction(currentState?.items.orEmpty()))
             }
         }
     }
 }
 ```
 
----
+### 4. Create Store Factory
 
-### Composer Package
+Create a factory to provide stores:
 
-#### `Composer.kt`
 ```kotlin
-interface Composer
-```
-**Purpose**: Base marker interface for all composers.
+import com.debdut.library.composer.store.factory.StoreFactory
 
----
-
-#### `DataComposer.kt`
-```kotlin
-interface DataComposer<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODEL: StoreInitObj>: Composer {
-    val uiStateFlow: StateFlow<List<UISTATE>>
-    val uiActionHolder: SharedFlow<UIComposerActionHolder>
+class CounterStoreFactory : StoreFactory<CounterState, InitModel, WidgetModel> {
     
-    suspend fun initialiseWithWidgets(widgets: List<WidgetId>, initObj: INITOBJ)
-    suspend fun updateWidgets(widgets: List<WidgetId>, initobj: INITOBJ)
-    fun initialiseWithInitModel(initObj: INITOBJ)
+    private val counterStore = CounterStore()
     
-    suspend fun suspendDispatch(action: Action)
-    suspend fun suspendDispatchToStore(action: StoreAction, storeId: StoreId)
-    suspend fun suspendDispatchToWidget(action: StoreAction, widgetId: WidgetId)
-    suspend fun suspendBatchDispatchToWidget(storeActionWidgetIdPairList: List<StoreActionWidgetIdPair>)
-    
-    fun currentWidgetIds(): List<WidgetId>
-    fun dispose()
-    
-    fun dispatch(action: Action)
-    fun dispatchToStore(action: StoreAction, storeId: StoreId)
-    fun dispatchToWidget(action: StoreAction, widgetId: WidgetId)
+    override fun get(widgetId: WidgetId): Store<CounterState, InitModel, WidgetModel> {
+        return when (widgetId) {
+            CounterWidgetId -> counterStore
+            else -> throw IllegalArgumentException("Unknown widget: $widgetId")
+        }
+    }
 }
 ```
-**Purpose**: Core interface for data management. Manages multiple stores and combines their states.
 
----
+### 5. Create ViewModel
 
-#### `SingleDataComposer.kt`
+Create a ViewModel that extends the base composer ViewModel:
+
 ```kotlin
-interface SingleDataComposer<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODEL: StoreInitObj>
-    : DataComposer<UISTATE, INITOBJ, STOREMODEL>
-```
-**Purpose**: For screens with a single widget/store.
+import androidx.lifecycle.ViewModel
+import com.debdut.library.composer.composer.data.host.ListDataComposerHost
+import com.debdut.library.composer.composer.data.ListDataComposer
+import com.debdut.library.composer.composer.data.DataComposerActionHandler
+import com.debdut.library.composer.composer.data.DataComposerActionHolder
+import com.debdut.library.composer.action.Action
+import com.debdut.library.composer.viewmodel.ListDataComposerViewModel
 
----
-
-#### `ListDataComposer.kt`
-```kotlin
-interface ListDataComposer<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODEL: StoreInitObj>
-    : DataComposer<UISTATE, INITOBJ, STOREMODEL>
-```
-**Purpose**: For screens with a list of widgets/stores.
-
----
-
-#### `ListWithHeaderAndFooterDataComposer.kt`
-```kotlin
-interface ListWithHeaderAndFooterDataComposer<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODEL: StoreInitObj>
-    : ListDataComposer<UISTATE, INITOBJ, STOREMODEL> {
-    val headerState: StateFlow<List<UISTATE>>
-    val footerState: StateFlow<List<UISTATE>>
-}
-```
-**Purpose**: Extended list composer with separate header and footer state streams.
-
----
-
-#### `DataComposerActionHandler.kt`
-```kotlin
-interface DataComposerActionHandler {
-    suspend fun receiveAction(dataComposerActionHolder: DataComposerActionHolder)
-    fun receiveAllActions(action: Action)
-}
-```
-**Purpose**: Callback interface for handling DataComposerActions. Usually implemented by the ViewModel.
-
-**Usage Example**:
-```kotlin
-class ViewModel : ListDataComposerViewModel<...>(...), DataComposerActionHandler {
+class CounterViewModel(
+    storeFactory: StoreFactory<CounterState, InitModel, WidgetModel>
+) : ListDataComposerViewModel<CounterState, InitModel, WidgetModel>(storeFactory),
+    DataComposerActionHandler {
     
     override val dataComposerActionHandler: DataComposerActionHandler = this
     
     override suspend fun receiveAction(dataComposerActionHolder: DataComposerActionHolder) {
-        when (val action = dataComposerActionHolder.action) {
-            is RefreshAllWidgetsAction -> {
-                // Re-initialize all stores
-                container.initialiseWithInitModel(currentInitModel)
-            }
-            is NavigateToDetailsAction -> {
-                _navigationEvent.emit(NavigationTarget.Details(action.itemId))
-            }
-        }
+        // Handle DataComposerActions if needed
     }
     
     override fun receiveAllActions(action: Action) {
-        // Called for every action that flows through the system
-        // Useful for logging/analytics
-        analytics.trackAction(action)
+        // Optional: Log or track all actions
     }
 }
 ```
 
----
+### 6. Use in Fragment
 
-### Composer Host Interfaces
-
-#### `DataComposerHost.kt`
-```kotlin
-interface DataComposerHost<UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> {
-    val container: DataComposer<UISTATE, INITDATA, STOREMODEL>
-}
-```
-**Purpose**: Interface for classes that host a DataComposer (typically ViewModels).
-
----
-
-#### `SingleDataComposerHost.kt`
-```kotlin
-interface SingleDataComposerHost<...>: DataComposerHost<...> {
-    override val container: SingleDataComposer<UISTATE, INITDATA, STOREMODEL>
-}
-```
-
----
-
-#### `ListDataComposerHost.kt`
-```kotlin
-interface ListDataComposerHost<...>: DataComposerHost<...> {
-    override val container: ListDataComposer<UISTATE, INITDATA, STOREMODEL>
-}
-```
-
----
-
-#### `ListWithHeaderAndFooterDataComposerHost.kt`
-```kotlin
-interface ListWithHeaderAndFooterDataComposerHost<...>: ListDataComposerHost<...> {
-    override val container: ListWithHeaderAndFooterDataComposer<UISTATE, INITDATA, STOREMODEL>
-}
-```
-
----
-
-### Composer Syntax Extensions
-
-#### `DataComposerHostSyntax.kt`
-Provides convenient extension functions for DataComposerHost:
+Implement the UIComposer interface in your Fragment:
 
 ```kotlin
-// Dispatch actions
-fun DataComposerHost<...>.dispatch(action: Action)
-suspend fun DataComposerHost<...>.suspendDispatch(action: Action)
+import android.os.Bundle
+import android.view.View
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import com.debdut.library.composer.composer.ui.ListUIComposer
+import com.debdut.library.composer.composer.data.host.ListDataComposerHost
+import com.debdut.library.composer.composer.ui.syntax.observeAsState
+import com.debdut.library.composer.composer.ui.syntax.observeAction
+import com.debdut.library.composer.composer.ui.syntax.dispatch
 
-// Dispatch to specific store/widget
-suspend fun DataComposerHost<...>.suspendDispatch(action: StoreAction, storeId: StoreId)
-suspend fun DataComposerHost<...>.suspendDispatch(action: StoreAction, widgetId: WidgetId)
-suspend fun DataComposerHost<...>.suspendBatchDispatch(storeActionWidgetIdPairList: List<StoreActionWidgetIdPair>)
-
-// Non-suspending variants
-fun DataComposerHost<...>.dispatch(action: StoreAction, storeId: StoreId)
-fun DataComposerHost<...>.dispatch(action: StoreAction, widgetId: WidgetId)
-
-// Initialize
-suspend fun DataComposerHost<...>.init(widgets: List<WidgetId>, initData: INITDATA)
-suspend fun DataComposerHost<...>.updateWidget(widgets: List<WidgetId>, initData: INITDATA)
-
-// State access
-val DataComposerHost<...>.uiState: StateFlow<List<UISTATE>>
-val DataComposerHost<...>.uiActionHolder: SharedFlow<UIComposerActionHolder>
-val DataComposerHost<...>.currentWidgetIds: List<WidgetId>
-
-// Observers
-fun DataComposerHost<...>.observeAsState(coroutineScope: CoroutineScope, observer: List<UISTATE>.() -> Unit)
-fun DataComposerHost<...>.observeActions(coroutineScope: CoroutineScope, observer: UIComposerActionHolder.() -> Unit)
-```
-
----
-
-#### `SingleDataComposerHostSyntax.kt`
-```kotlin
-fun SingleDataComposerHost<...>.observeState(
-    coroutineScope: CoroutineScope,
-    observer: UISTATE.() -> Unit
-)
-```
-**Purpose**: Convenience function that extracts the first (and only) state from the list.
-
----
-
-#### `ListWithHeaderAndFooterDataComposerHostSyntax.kt`
-```kotlin
-fun ListWithHeaderAndFooterDataComposerHost<...>.observeHeaderState(
-    coroutineScope: CoroutineScope,
-    observer: List<UISTATE>.() -> Unit
-)
-
-fun ListWithHeaderAndFooterDataComposerHost<...>.observeFooterState(
-    coroutineScope: CoroutineScope,
-    observer: List<UISTATE>.() -> Unit
-)
-
-val ListWithHeaderAndFooterDataComposerHost<...>.headerState: StateFlow<List<UISTATE>>
-val ListWithHeaderAndFooterDataComposerHost<...>.footerState: StateFlow<List<UISTATE>>
-```
-
----
-
-### UI Composer Package
-
-#### `UIComposer.kt`
-```kotlin
-interface UIComposer<UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj>: Composer {
-    val container: DataComposerHost<UISTATE, INITDATA, STOREMODEL>
-}
-```
-**Purpose**: UI-layer composer that wraps a DataComposerHost.
-
----
-
-#### `ListUIComposer.kt`
-```kotlin
-interface ListUIComposer<...>: UIComposer<...> {
-    override val container: ListDataComposerHost<UISTATE, INITDATA, STOREMODEL>
-}
-```
-
----
-
-#### `SingleUIComposer.kt`
-```kotlin
-interface SingleUIComposer<...>: UIComposer<...> {
-    override val container: SingleDataComposerHost<UISTATE, INITDATA, STOREMODEL>
-}
-```
-
----
-
-#### `ListUIComposerWithHeaderAndFooter.kt`
-```kotlin
-interface ListUIComposerWithHeaderAndFooter<...>: UIComposer<...> {
-    override val container: ListWithHeaderAndFooterDataComposerHost<UISTATE, INITDATA, STOREMODEL>
-}
-```
-
----
-
-### Widget ID Classes
-
-#### `WidgetId.kt`
-```kotlin
-interface WidgetId {
-    val id: String
-    companion object {
-        val Empty = object : StoreId {
-            override val id: String = ""
+class CounterFragment : Fragment(R.layout.fragment_counter), 
+    ListUIComposer<CounterState, InitModel, WidgetModel> {
+    
+    private val viewModel: CounterViewModel by viewModels {
+        CounterViewModelFactory(CounterStoreFactory())
+    }
+    
+    override val container: ListDataComposerHost<CounterState, InitModel, WidgetModel>
+        get() = viewModel
+    
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        // Observe state changes
+        observeAsState(viewLifecycleOwner) { states ->
+            states.firstOrNull()?.let { state ->
+                binding.counterText.text = "Count: ${state.count}"
+            }
+        }
+        
+        // Handle UI actions (toasts, navigation, etc.)
+        observeAction(viewLifecycleOwner) { holder ->
+            when (val action = holder.action) {
+                is ShowToastAction -> {
+                    Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        
+        // Initialize with widgets
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.init(
+                widgets = listOf(CounterWidgetId),
+                initData = InitModel()
+            )
+        }
+        
+        // Setup click listeners
+        binding.incrementButton.setOnClickListener {
+            dispatch(IncrementAction(amount = 1))
+        }
+        
+        binding.decrementButton.setOnClickListener {
+            dispatch(DecrementAction(amount = 1))
         }
     }
 }
 ```
-**Purpose**: Base interface for widget identification.
 
----
+### 7. Dependency Injection (Optional)
 
-#### `HostWidgetId.kt`
-```kotlin
-interface HostWidgetId: WidgetId
-```
-**Purpose**: Marker for widgets that can host child widgets (used with `GroupWidget`).
+If using dependency injection (e.g., Hilt, Koin), provide the StoreFactory:
 
----
-
-#### `ChildWidgetId.kt`
-```kotlin
-interface ChildWidgetId: WidgetId {
-    val uiState: UIState
-}
-```
-**Purpose**: For child widgets within a group that have static state.
-
----
-
-#### `NoStoreWidgetId.kt`
-```kotlin
-interface NoStoreWidgetId: WidgetId {
-    val uiState: UIState
-}
-```
-**Purpose**: For widgets that don't need a store (static content).
-
----
-
-#### `GroupWidget.kt`
-```kotlin
-interface GroupWidget: WidgetId {
-    val hostId: HostWidgetId
-    val topChildren: List<ChildWidgetId>
-    val bottomChildren: List<ChildWidgetId>
-}
-```
-**Purpose**: Groups a host widget with its child widgets. When the host is hidden, all children are also hidden.
-
----
-
-#### `StoreActionWidgetIdPair.kt`
-```kotlin
-data class StoreActionWidgetIdPair(
-    val action: StoreAction,
-    val widgetId: WidgetId
-)
-```
-**Purpose**: Pairs an action with a target widget for batch dispatching.
-
----
-
-### UI Composer Syntax
-
-#### `UIComposerSyntax.kt`
-```kotlin
-fun UIComposer<...>.dispatch(action: StoreAction)
-fun UIComposer<...>.dispatch(action: StoreAction, storeId: StoreId)
-fun UIComposer<...>.dispatch(action: DataComposerAction)
-
-fun UIComposer<...>.observeAsState(
-    lifecycleOwner: LifecycleOwner,
-    lifecycleState: Lifecycle.State = Lifecycle.State.STARTED,
-    observer: List<UISTATE>.() -> Unit
-)
-
-fun UIComposer<...>.observeAction(
-    lifecycleOwner: LifecycleOwner,
-    lifecycleState: Lifecycle.State = Lifecycle.State.STARTED,
-    observer: UIComposerActionHolder.() -> Unit
-)
-```
-**Purpose**: Lifecycle-aware observation functions for Fragments/Activities.
-
----
-
-#### `ListUIComposerWithHeaderAndFooterSyntax.kt`
-```kotlin
-fun ListUIComposerWithHeaderAndFooter<...>.observeHeaderState(
-    lifecycleOwner: LifecycleOwner,
-    lifecycleState: Lifecycle.State = Lifecycle.State.STARTED,
-    observer: List<UISTATE>.() -> Unit
-)
-
-fun ListUIComposerWithHeaderAndFooter<...>.observeFooterState(
-    lifecycleOwner: LifecycleOwner,
-    lifecycleState: Lifecycle.State = Lifecycle.State.STARTED,
-    observer: List<UISTATE>.() -> Unit
-)
-```
-
----
-
-### Extensions
-
-#### `HostExtensions.kt`
-Factory functions for creating composers:
+**For Hilt:**
 
 ```kotlin
-fun <...> listDataComposer(
-    storeFactory: StoreFactory<...>,
-    coroutineScope: CoroutineScope,
-    dataComposerActionHandler: DataComposerActionHandler
-): ListDataComposer<...>
-
-fun <...> singleDataComposer(
-    storeFactory: StoreFactory<...>,
-    coroutineScope: CoroutineScope,
-    dataComposerActionHandler: DataComposerActionHandler
-): SingleDataComposer<...>
-
-fun <...> listWithHeaderAndFooterDataComposer(
-    storeFactory: StoreFactory<...>,
-    coroutineScope: CoroutineScope,
-    dataComposerActionHandler: DataComposerActionHandler
-): ListWithHeaderAndFooterDataComposer<...>
-```
-
----
-
-#### `CoroutineExtensions.kt`
-```kotlin
-internal fun <T: ActionHolder, ...> CoroutineScope.collectActionHolder(
-    list: List<Store<...>>,
-    property: Store<...>.() -> SharedFlow<ActionHolder>,
-    block: suspend (T) -> Unit
-): Job
-```
-**Purpose**: Internal utility for collecting action holders from multiple stores.
-
----
-
-### UI Components
-
-#### `ListUIComposerFragment.kt`
-```kotlin
-abstract class ListUIComposerFragment<UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj>(
-    @LayoutRes private val layoutId: Int
-): Fragment(layoutId), ListUIComposer<UISTATE, INITDATA, STOREMODEL> {
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        observeAsState(lifecycleOwner = viewLifecycleOwner, observer = ::render)
-        observeAction(lifecycleOwner = viewLifecycleOwner, observer = ::handleUIAction)
-    }
+@Module
+@InstallIn(ViewModelComponent::class)
+object CounterModule {
     
-    abstract fun render(state: List<UISTATE>)
-    abstract fun handleUIAction(actionHolder: UIComposerActionHolder)
-}
-```
-**Purpose**: Base Fragment for list-based UI composition.
-
----
-
-#### `ListUIComposerWithHeaderAndFooterFragment.kt`
-```kotlin
-abstract class ListUIComposerWithHeaderAndFooterFragment<...>(
-    @LayoutRes private val layoutId: Int
-): ListUIComposerFragment<...>(layoutId), ListUIComposerWithHeaderAndFooter<...> {
-
-    abstract override val container: ListWithHeaderAndFooterDataComposerHost<...>
-    
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        observeHeaderState(lifecycleOwner = viewLifecycleOwner, observer = ::renderHeader)
-        observeFooterState(lifecycleOwner = viewLifecycleOwner, observer = ::renderFooter)
-    }
-
-    abstract fun renderHeader(list: List<UISTATE>)
-    abstract fun renderFooter(list: List<UISTATE>)
-}
-```
-**Purpose**: Base Fragment with header/footer support.
-
----
-
-### ViewModels
-
-#### `ListDataComposerViewModel.kt`
-```kotlin
-abstract class ListDataComposerViewModel<UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj>(
-    storeFactory: StoreFactory<UISTATE, INITDATA, STOREMODEL>
-) : ViewModel(), ListDataComposerHost<UISTATE, INITDATA, STOREMODEL> {
-    
-    abstract val dataComposerActionHandler: DataComposerActionHandler
-    
-    override val container: ListDataComposer<...> by lazy {
-        listDataComposer(
-            storeFactory = storeFactory,
-            coroutineScope = viewModelScope,
-            dataComposerActionHandler = dataComposerActionHandler
-        )
+    @Provides
+    fun provideCounterStoreFactory(): StoreFactory<CounterState, InitModel, WidgetModel> {
+        return CounterStoreFactory()
     }
 }
 ```
-**Purpose**: Base ViewModel for list-based screens.
 
 ---
 
-#### `ListWithHeaderAndFooterDataComposerViewModel.kt`
+## 📚 Core Concepts
+
+### Stores
+
+Stores are the core business units that manage state for individual widgets. Each Store:
+
+- Manages the UI state for one widget
+- Processes actions and updates state accordingly
+- Can dispatch side effects to parent layers
+- Is easily testable in isolation
+
+### Actions
+
+Actions are immutable data classes that describe "what happened" in the system:
+
+- **StoreAction**: Actions handled by Stores (most common)
+- **DataComposerAction**: Actions handled by DataComposer layer
+- **UIComposerAction**: Actions that bubble up to UI layer (navigation, toasts, etc.)
+
+### Composers
+
+Composers orchestrate multiple Stores:
+
+- **DataComposer**: Manages Stores, combines states, routes actions
+- **UIComposer**: Lifecycle-aware wrapper for UI layer integration
+
+### State Management
+
+- States are immutable data classes implementing `UIState`
+- State updates flow reactively through Kotlin Flows
+- Each widget has its own isolated state
+
+---
+
+## 📖 File Documentation
+
+### Package Structure
+
+The Composer library is organized into the following packages:
+
+- **`com.debdut.library.composer.store`** - Store implementation and management
+  - Core Store class and StoreId
+  - StoreFactory for creating stores
+  - Store lifecycle management
+
+- **`com.debdut.library.composer.action`** - Action definitions and routing
+  - StoreAction, DataComposerAction, UIComposerAction
+  - ActionId and action holders
+  - Action routing mechanisms
+
+- **`com.debdut.library.composer.composer`** - Composer interfaces and implementations
+  - DataComposer (Single, List, ListWithHeaderFooter variants)
+  - UIComposer interfaces
+  - Composer hosts and syntax extensions
+
+- **`com.debdut.library.composer.state`** - State management interfaces
+  - UIState interface and implementations
+  - State type markers (Header, Footer, Default)
+
+- **`com.debdut.library.composer.composer.ui`** - UI layer integration
+  - WidgetId definitions
+  - Base Fragment classes
+  - Lifecycle-aware observation helpers
+
+### Import Examples
+
 ```kotlin
-abstract class ListWithHeaderAndFooterDataComposerViewModel<UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj>(
-    storeFactory: StoreFactory<...>
-) : ViewModel(), ListWithHeaderAndFooterDataComposerHost<...> {
+// Store
+import com.debdut.library.composer.store.Store
+import com.debdut.library.composer.store.StoreId
+import com.debdut.library.composer.store.StoreFactory
+
+// Actions
+import com.debdut.library.composer.action.StoreAction
+import com.debdut.library.composer.action.ActionId
+
+// Composers
+import com.debdut.library.composer.composer.data.DataComposer
+import com.debdut.library.composer.composer.ui.UIComposer
+
+// State
+import com.debdut.library.composer.state.UIState
+
+// ViewModels
+import com.debdut.library.composer.viewmodel.ListDataComposerViewModel
+```
+
+---
+
+## 🧪 Testing
+
+Stores can be easily tested in isolation:
+
+```kotlin
+import kotlinx.coroutines.test.runTest
+import org.junit.Test
+import org.junit.Assert.assertEquals
+
+class CounterStoreTest {
     
-    protected abstract val dataComposerActionHandler: DataComposerActionHandler
+    @Test
+    fun `increment action increases count`() = runTest {
+        val store = CounterStore()
+        store.initialise(InitModel())
+        
+        store.receive(IncrementAction(amount = 5), CounterStoreId)
+        
+        assertEquals(5, store.currentState?.count)
+    }
     
-    override val container: ListWithHeaderAndFooterDataComposer<...> by lazy {
-        listWithHeaderAndFooterDataComposer(
-            storeFactory = storeFactory,
-            coroutineScope = viewModelScope,
-            dataComposerActionHandler = dataComposerActionHandler
-        )
+    @Test
+    fun `decrement action decreases count`() = runTest {
+        val store = CounterStore()
+        store.initialise(InitModel())
+        store.receive(IncrementAction(amount = 10), CounterStoreId)
+        
+        store.receive(DecrementAction(amount = 3), CounterStoreId)
+        
+        assertEquals(7, store.currentState?.count)
     }
 }
 ```
-**Purpose**: Base ViewModel with header/footer support.
 
 ---
 
----
+## 🤝 Contributing
 
-## Best Practices
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-### 1. Store Design
-- Keep stores focused on a single widget's concerns
-- Define clear `subscribedStoreAction` sets
-- Use `reset()` for subscriptions that should persist across re-initialization
+Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
-### 2. Action Design
-- Create specific actions rather than generic ones
-- Include all necessary data in the action
-- Use sealed interfaces for related actions
-
-### 3. State Design
-- Make states immutable (data classes)
-- Include `widgetId` for identification
-- Use `visible` flag for conditional rendering
-
-### 4. Dispatching
-- Use `suspendDispatch` in suspend contexts
-- Use `dispatch` for fire-and-forget scenarios
-- Use `dispatchToWidget` for targeted updates
-
-### 5. Testing
-- Test stores in isolation by calling `receive()` directly
-- Mock the `StoreFactory` for ViewModel tests
-- Use `runTest` for coroutine testing
+Quick steps:
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
-## Dependencies
+## 📄 License
 
-```kotlin
-dependencies {
-    implementation(libs.bundles.lifecycle)  // ViewModel, lifecycleScope
-    implementation(libs.bundles.coroutine)  // Flow, coroutines
-}
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+```
+Copyright 2024 Debdut Saha
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 ```
 
 ---
 
-## Migration Guide
+## 👤 Author
 
-### From Traditional ViewModel to StoreComposer
+**Debdut Saha**
 
-1. Identify widgets on your screen
-2. Create `UIState` for each widget
-3. Create `Store` for each widget
-4. Create `StoreFactory`
-5. Extend `ListDataComposerViewModel` or `ListWithHeaderAndFooterDataComposerViewModel`
-6. Implement `DataComposerActionHandler`
-7. Update Fragment to implement `ListUIComposer` interface
+- Email: debdut.saha.1@gmail.com
+- GitHub: [@12345debdut](https://github.com/12345debdut)
 
 ---
 
-*Generated documentation for the StoreComposer module v1.0*
+## 🙏 Acknowledgments
 
+- Built with [Kotlin](https://kotlinlang.org/) and [Android Jetpack](https://developer.android.com/jetpack)
+- Inspired by unidirectional data flow patterns
+- Uses [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) and [Flow](https://kotlinlang.org/docs/flow.html) for reactive programming
+
+---
+
+## 📊 Project Status
+
+This project is actively maintained and ready for production use. Current version: **1.0.0**
+
+---
+
+## 📚 Additional Resources
+
+- **[Full Documentation](#composer-module-documentation)** - Complete API reference and guides
+- **[Publishing Guide](./PUBLISHING.md)** - How to publish your own libraries
+- **[Troubleshooting](./TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute to this project
+- **[Changelog](./CHANGELOG.md)** - Version history and changes
+
+---
+
+<div align="center">
+
+**⭐ If you find this project helpful, please consider giving it a star! ⭐**
+
+Made with ❤️ for the Android community
+
+</div>
