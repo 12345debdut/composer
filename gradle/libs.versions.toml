@@ -15,7 +15,7 @@ mockk = "1.13.12"
 composeBom = "2024.12.01"
 dokka = "1.9.20"
 vanniktech-publish = "0.29.0"
-binary-compat = "0.16.3"
+binary-compat = "0.18.1"
 activityCompose = "1.9.3"
 
 [libraries]
