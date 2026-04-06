@@ -4,9 +4,10 @@
 
 **A modern, unidirectional state management library for Android applications**
 
+[![CI](https://github.com/12345debdut/composerlibrary/actions/workflows/ci.yml/badge.svg)](https://github.com/12345debdut/composerlibrary/actions/workflows/ci.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.debdutsaha/composer)](https://central.sonatype.com/artifact/io.github.debdutsaha/composer)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-blue.svg)](https://kotlinlang.org)
 [![Android](https://img.shields.io/badge/Android-24+-green.svg)](https://developer.android.com)
-[![Version](https://img.shields.io/badge/Version-1.0.0-orange.svg)](https://github.com/12345debdut/composer)
 [![License](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 [Overview](#-overview) • [Architecture](#️-architecture) • [Installation](#-installation) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [License](#-license)

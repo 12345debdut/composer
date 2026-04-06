@@ -20,6 +20,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.debdut.composer.sample.compose.ComposeCounterActivity"
+            android:exported="false"
+            android:label="Compose Counter" />
     </application>
 
 </manifest>

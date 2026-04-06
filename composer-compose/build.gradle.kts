@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.vanniktech.publish)
     alias(libs.plugins.binary.compat)
+    alias(libs.plugins.dokka)
 }
 
 android {

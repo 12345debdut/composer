@@ -23,7 +23,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build all modules
-        run: ./gradlew :composer:build :composer-compose:build :composer-bom:build
+        run: ./gradlew :composer:build :composer-compose:build :composer-bom:build :app:build
 
       - name: Run unit tests
         run: ./gradlew :composer:test :composer-compose:test

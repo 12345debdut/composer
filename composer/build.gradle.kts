@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.vanniktech.publish)
     alias(libs.plugins.binary.compat)
+    alias(libs.plugins.dokka)
 }
 
 android {
