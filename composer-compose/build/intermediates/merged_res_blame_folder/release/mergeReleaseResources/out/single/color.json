@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.debdut.composer.compose.composer-compose-release-39:/color/vector_tint_theme_color.xml",
+        "source": "com.debdut.composer.compose.composer-compose-ui-release-25:/color/vector_tint_theme_color.xml"
+    },
+    {
+        "merged": "com.debdut.composer.compose.composer-compose-release-39:/color/vector_tint_color.xml",
+        "source": "com.debdut.composer.compose.composer-compose-ui-release-25:/color/vector_tint_color.xml"
+    }
+]

@@ -1,0 +1,45 @@
+com.debdut.composer.compose.composer-compose-lifecycle-viewmodel-savedstate-2.8.7-0 /Users/debdutsaha/.gradle/caches/8.13/transforms/0e972d5ae0823fce40909e67e3d23151/transformed/lifecycle-viewmodel-savedstate-2.8.7/res
+com.debdut.composer.compose.composer-compose-core-ktx-1.17.0-1 /Users/debdutsaha/.gradle/caches/8.13/transforms/18990265589ec75b9f133dbaeb17ae53/transformed/core-ktx-1.17.0/res
+com.debdut.composer.compose.composer-compose-lifecycle-runtime-release-2 /Users/debdutsaha/.gradle/caches/8.13/transforms/216395887f8efaeae29a277146688c30/transformed/lifecycle-runtime-release/res
+com.debdut.composer.compose.composer-compose-lifecycle-viewmodel-ktx-2.8.7-3 /Users/debdutsaha/.gradle/caches/8.13/transforms/27bd9e9c406863d62d437a187ce303f0/transformed/lifecycle-viewmodel-ktx-2.8.7/res
+com.debdut.composer.compose.composer-compose-annotation-experimental-1.4.1-4 /Users/debdutsaha/.gradle/caches/8.13/transforms/299303f00a18236f166b9f8987ff55c5/transformed/annotation-experimental-1.4.1/res
+com.debdut.composer.compose.composer-compose-runtime-release-5 /Users/debdutsaha/.gradle/caches/8.13/transforms/2a1ad545b2c517716a4a1135c62021a2/transformed/runtime-release/res
+com.debdut.composer.compose.composer-compose-ui-geometry-release-6 /Users/debdutsaha/.gradle/caches/8.13/transforms/2bb006ec40667de237b99d349498f6d6/transformed/ui-geometry-release/res
+com.debdut.composer.compose.composer-compose-ui-unit-release-7 /Users/debdutsaha/.gradle/caches/8.13/transforms/2e4b581adae0876e30b53f3d4f668d66/transformed/ui-unit-release/res
+com.debdut.composer.compose.composer-compose-runtime-saveable-release-8 /Users/debdutsaha/.gradle/caches/8.13/transforms/2fe13f35d2ce30ca0c815c9d7c498bde/transformed/runtime-saveable-release/res
+com.debdut.composer.compose.composer-compose-startup-runtime-1.1.1-9 /Users/debdutsaha/.gradle/caches/8.13/transforms/34eddc9183861f3c69a84696dff2b758/transformed/startup-runtime-1.1.1/res
+com.debdut.composer.compose.composer-compose-tracing-1.2.0-10 /Users/debdutsaha/.gradle/caches/8.13/transforms/3c6dc7a1e4abbc26ab5615c9f1a3c0af/transformed/tracing-1.2.0/res
+com.debdut.composer.compose.composer-compose-core-1.17.0-11 /Users/debdutsaha/.gradle/caches/8.13/transforms/3f4c651df4879c4d9b500856da83cbc2/transformed/core-1.17.0/res
+com.debdut.composer.compose.composer-compose-graphics-path-1.0.1-12 /Users/debdutsaha/.gradle/caches/8.13/transforms/3f55fe0a1134419c029b42a87046029c/transformed/graphics-path-1.0.1/res
+com.debdut.composer.compose.composer-compose-lifecycle-livedata-2.8.7-13 /Users/debdutsaha/.gradle/caches/8.13/transforms/461a1674212acab865168dbd41900373/transformed/lifecycle-livedata-2.8.7/res
+com.debdut.composer.compose.composer-compose-activity-1.8.1-14 /Users/debdutsaha/.gradle/caches/8.13/transforms/5361d7329e0fcd0e0522c723def0f964/transformed/activity-1.8.1/res
+com.debdut.composer.compose.composer-compose-lifecycle-livedata-ktx-2.8.7-15 /Users/debdutsaha/.gradle/caches/8.13/transforms/5636b4c89f368bdabe87067b99ceecab/transformed/lifecycle-livedata-ktx-2.8.7/res
+com.debdut.composer.compose.composer-compose-lifecycle-runtime-compose-release-16 /Users/debdutsaha/.gradle/caches/8.13/transforms/5fed2163bb6a8005fbca52e3a73fba61/transformed/lifecycle-runtime-compose-release/res
+com.debdut.composer.compose.composer-compose-core-viewtree-1.0.0-17 /Users/debdutsaha/.gradle/caches/8.13/transforms/68f0b06b884fa2c93277aa423c9427f8/transformed/core-viewtree-1.0.0/res
+com.debdut.composer.compose.composer-compose-fragment-1.8.5-18 /Users/debdutsaha/.gradle/caches/8.13/transforms/6c5ae76b4c3b6fd8c457ddfa98ede7d9/transformed/fragment-1.8.5/res
+com.debdut.composer.compose.composer-compose-savedstate-ktx-1.2.1-19 /Users/debdutsaha/.gradle/caches/8.13/transforms/6e63d42c3698a64eed20afc625d4f217/transformed/savedstate-ktx-1.2.1/res
+com.debdut.composer.compose.composer-compose-ui-graphics-release-20 /Users/debdutsaha/.gradle/caches/8.13/transforms/6f26cf07110e78af9d4266f893e4fe27/transformed/ui-graphics-release/res
+com.debdut.composer.compose.composer-compose-ui-util-release-21 /Users/debdutsaha/.gradle/caches/8.13/transforms/778777337fcf7787bf96fff3c3dd7153/transformed/ui-util-release/res
+com.debdut.composer.compose.composer-compose-emoji2-1.2.0-22 /Users/debdutsaha/.gradle/caches/8.13/transforms/7ca7c81058ed86998b03ea63c844d60c/transformed/emoji2-1.2.0/res
+com.debdut.composer.compose.composer-compose-activity-ktx-1.8.1-23 /Users/debdutsaha/.gradle/caches/8.13/transforms/83a4489a429eecb0a747818cccaae8c4/transformed/activity-ktx-1.8.1/res
+com.debdut.composer.compose.composer-compose-lifecycle-runtime-ktx-release-24 /Users/debdutsaha/.gradle/caches/8.13/transforms/8cb6977ce4e420d935f76d62c696c1fd/transformed/lifecycle-runtime-ktx-release/res
+com.debdut.composer.compose.composer-compose-ui-release-25 /Users/debdutsaha/.gradle/caches/8.13/transforms/acec768b6f9da34551f0f61c92422b61/transformed/ui-release/res
+com.debdut.composer.compose.composer-compose-core-runtime-2.2.0-26 /Users/debdutsaha/.gradle/caches/8.13/transforms/b6a67bd153dac595237627d6d2f5d310/transformed/core-runtime-2.2.0/res
+com.debdut.composer.compose.composer-compose-lifecycle-livedata-core-2.8.7-27 /Users/debdutsaha/.gradle/caches/8.13/transforms/c4d3696e08b07b0cbfb5e0d8585a75dd/transformed/lifecycle-livedata-core-2.8.7/res
+com.debdut.composer.compose.composer-compose-lifecycle-viewmodel-release-28 /Users/debdutsaha/.gradle/caches/8.13/transforms/d0ca96cde5bca074517382274772bfe5/transformed/lifecycle-viewmodel-release/res
+com.debdut.composer.compose.composer-compose-fragment-ktx-1.8.5-29 /Users/debdutsaha/.gradle/caches/8.13/transforms/e25db126b2dbb310854f2295365c482a/transformed/fragment-ktx-1.8.5/res
+com.debdut.composer.compose.composer-compose-customview-poolingcontainer-1.0.0-30 /Users/debdutsaha/.gradle/caches/8.13/transforms/e2fdab39498b7cd984ee25530d302959/transformed/customview-poolingcontainer-1.0.0/res
+com.debdut.composer.compose.composer-compose-profileinstaller-1.3.1-31 /Users/debdutsaha/.gradle/caches/8.13/transforms/e603e9061d49a7c91351b05009a927ec/transformed/profileinstaller-1.3.1/res
+com.debdut.composer.compose.composer-compose-lifecycle-process-2.8.7-32 /Users/debdutsaha/.gradle/caches/8.13/transforms/ee9cf77db4a7fb50e2dfeac2836d0a16/transformed/lifecycle-process-2.8.7/res
+com.debdut.composer.compose.composer-compose-savedstate-1.2.1-33 /Users/debdutsaha/.gradle/caches/8.13/transforms/eebbbeb15d3566e752155d7151784b83/transformed/savedstate-1.2.1/res
+com.debdut.composer.compose.composer-compose-ui-text-release-34 /Users/debdutsaha/.gradle/caches/8.13/transforms/f499247b8c2038242c867fcd79c7596d/transformed/ui-text-release/res
+com.debdut.composer.compose.composer-compose-lifecycle-livedata-core-ktx-2.8.7-35 /Users/debdutsaha/.gradle/caches/8.13/transforms/fa1af6365dfe2baec219d0a0a60a05b3/transformed/lifecycle-livedata-core-ktx-2.8.7/res
+com.debdut.composer.compose.composer-compose-pngs-36 /Users/debdutsaha/Documents/GithubPersonal/Mobile Frontend/composerlibrary/composer-compose/build/generated/res/pngs/release
+com.debdut.composer.compose.composer-compose-resValues-37 /Users/debdutsaha/Documents/GithubPersonal/Mobile Frontend/composerlibrary/composer-compose/build/generated/res/resValues/release
+com.debdut.composer.compose.composer-compose-updated_navigation_xml-38 /Users/debdutsaha/Documents/GithubPersonal/Mobile Frontend/composerlibrary/composer-compose/build/generated/updated_navigation_xml/release
+com.debdut.composer.compose.composer-compose-mergeReleaseResources-39 /Users/debdutsaha/Documents/GithubPersonal/Mobile Frontend/composerlibrary/composer-compose/build/intermediates/incremental/release/mergeReleaseResources/merged.dir
+com.debdut.composer.compose.composer-compose-mergeReleaseResources-40 /Users/debdutsaha/Documents/GithubPersonal/Mobile Frontend/composerlibrary/composer-compose/build/intermediates/incremental/release/mergeReleaseResources/stripped.dir
+com.debdut.composer.compose.composer-compose-release-41 /Users/debdutsaha/Documents/GithubPersonal/Mobile Frontend/composerlibrary/composer-compose/build/intermediates/merged_res/release/mergeReleaseResources
+com.debdut.composer.compose.composer-compose-main-42 /Users/debdutsaha/Documents/GithubPersonal/Mobile Frontend/composerlibrary/composer-compose/src/main/res
+com.debdut.composer.compose.composer-compose-release-43 /Users/debdutsaha/Documents/GithubPersonal/Mobile Frontend/composerlibrary/composer-compose/src/release/res
+com.debdut.composer.compose.composer-compose-release-44 /Users/debdutsaha/Documents/GithubPersonal/Mobile Frontend/composerlibrary/composer/build/intermediates/packaged_res/release/packageReleaseResources

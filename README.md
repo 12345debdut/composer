@@ -6,7 +6,7 @@
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-blue.svg)](https://kotlinlang.org)
 [![Android](https://img.shields.io/badge/Android-24+-green.svg)](https://developer.android.com)
-[![Version](https://img.shields.io/badge/Version-1.0.0-orange.svg)](https://github.com/12345debdut/composer)
+[![Version](https://img.shields.io/badge/Version-2.0.0-orange.svg)](https://github.com/12345debdut/composer)
 [![License](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 [Overview](#-overview) • [Architecture](#️-architecture) • [Installation](#-installation) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [License](#-license)
@@ -22,40 +22,20 @@
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("com.debdut.library:composer:1.0.0")
+    implementation("io.github.debdutsaha:composer:2.0.0")
 }
 ```
 
 ```groovy
 // build.gradle
 dependencies {
-    implementation 'com.debdut.library:composer:1.0.0'
+    implementation 'io.github.debdutsaha:composer:2.0.0'
 }
 ```
 
 ### Repository
 
-Add to `settings.gradle.kts`:
-
-```kotlin
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/12345debdut/composer")
-            credentials {
-                username = project.findProperty("GITHUB_USER") as String? ?: System.getenv("GITHUB_USER")
-                password = project.findProperty("GITHUB_TOKEN") as String? ?: System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-}
-```
-
-> ⚠️ **Note:** You'll need a GitHub Personal Access Token with `read:packages` permission. See [Installation Guide](#-installation) for detailed setup.
+The library is published to **Maven Central** — no extra repository configuration needed. Just ensure `mavenCentral()` is in your repositories (it is by default).
 
 ---
 
@@ -77,21 +57,19 @@ dependencyResolutionManagement {
 
 ### Version
 
-**Current Version:** `1.0.0`
+**Current Version:** `2.0.0`
 
 ### Maven Coordinates
 
 ```
-Group ID:    com.debdut.library
+Group ID:    io.github.debdutsaha
 Artifact ID: composer
-Version:     1.0.0
+Version:     2.0.0
 ```
 
 ### Repository
 
-```
-https://maven.pkg.github.com/12345debdut/composer
-```
+Published to **Maven Central** — no authentication required.
 
 ### Requirements
 
@@ -206,154 +184,17 @@ This guide will walk you through adding Composer library to your Android project
 
 ### Quick Setup
 
-**Dependency:**
-```kotlin
-implementation("com.debdut.library:composer:1.0.0")
-```
-
-**Repository:** `https://maven.pkg.github.com/12345debdut/composer`
-
-### Step 1: Add GitHub Packages Repository
-
-Add the repository to your project's `settings.gradle.kts` (or `settings.gradle`):
-
-**For Kotlin DSL (`settings.gradle.kts`):**
-
-```kotlin
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/12345debdut/composer")
-            credentials {
-                username = project.findProperty("GITHUB_USER") as String? ?: System.getenv("GITHUB_USER")
-                password = project.findProperty("GITHUB_TOKEN") as String? ?: System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-}
-```
-
-**For Groovy DSL (`settings.gradle`):**
-
-```groovy
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/12345debdut/composer")
-            credentials {
-                username = project.findProperty("GITHUB_USER") ?: System.getenv("GITHUB_USER")
-                password = project.findProperty("GITHUB_TOKEN") ?: System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-}
-```
-
-### Step 2: Add Dependency
-
-Add the dependency to your module's `build.gradle.kts` (or `build.gradle`):
-
-**For Kotlin DSL (`build.gradle.kts`):**
+Add the dependency to your module's `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.debdut.library:composer:1.0.0")
+    implementation("io.github.debdutsaha:composer:2.0.0")
 }
 ```
 
-**For Groovy DSL (`build.gradle`):**
+No additional repository configuration required — the library is on Maven Central.
 
-```groovy
-dependencies {
-    implementation 'com.debdut.library:composer:1.0.0'
-}
-```
-
-### Step 3: Configure Authentication
-
-You'll need a GitHub Personal Access Token with `read:packages` permission to access the package.
-
-#### Create a GitHub Personal Access Token
-
-1. Go to [GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)](https://github.com/settings/tokens)
-2. Click "Generate new token (classic)"
-3. Give it a descriptive name (e.g., "Composer Library Access")
-4. Select the `read:packages` scope
-5. Click "Generate token"
-6. **Copy the token immediately** - you won't be able to see it again!
-
-#### Configure Credentials
-
-You have three options for providing credentials:
-
-**Option 1: Using `local.properties` (Recommended for local development)**
-
-Create or edit `local.properties` in your project root:
-
-```properties
-GITHUB_USER=your-github-username
-GITHUB_TOKEN=ghp_your_personal_access_token_here
-```
-
-**Note:** `local.properties` is typically already in `.gitignore`, so your token won't be committed.
-
-**Option 2: Using Environment Variables**
-
-Set environment variables in your system:
-
-**On macOS/Linux:**
-```bash
-export GITHUB_USER=your-github-username
-export GITHUB_TOKEN=ghp_your_personal_access_token_here
-```
-
-**On Windows (PowerShell):**
-```powershell
-$env:GITHUB_USER="your-github-username"
-$env:GITHUB_TOKEN="ghp_your_personal_access_token_here"
-```
-
-**On Windows (Command Prompt):**
-```cmd
-set GITHUB_USER=your-github-username
-set GITHUB_TOKEN=ghp_your_personal_access_token_here
-```
-
-**Option 3: Using Gradle Properties**
-
-Add to your `gradle.properties` file in the project root:
-
-```properties
-GITHUB_USER=your-github-username
-GITHUB_TOKEN=ghp_your_personal_access_token_here
-```
-
-**⚠️ Warning:** If using `gradle.properties`, make sure it's in `.gitignore` to avoid committing your token.
-
-### Step 4: Sync Project
-
-After adding the dependency and configuring credentials:
-
-1. Click "Sync Now" in Android Studio, or
-2. Run `./gradlew build --refresh-dependencies` from the command line
-
-### Troubleshooting Installation
-
-If you encounter issues:
-
-- **401 Unauthorized**: Check that your `GITHUB_TOKEN` has `read:packages` permission
-- **404 Not Found**: Verify the repository URL and that the package exists
-- **Dependency not found**: Ensure credentials are set correctly in `local.properties` or environment variables
-
-See [Troubleshooting Guide](./TROUBLESHOOTING.md) for more help.
+Sync your project and you're ready to go.
 
 ---
 
@@ -364,10 +205,10 @@ See [Troubleshooting Guide](./TROUBLESHOOTING.md) for more help.
 Create a data class that implements `UIState`:
 
 ```kotlin
-import com.debdut.library.composer.state.UIState
-import com.debdut.library.composer.state.UIStateType
-import com.debdut.library.composer.state.UIStateDefaultType
-import com.debdut.library.composer.composer.ui.WidgetId
+import com.debdut.composer.state.UIState
+import com.debdut.composer.state.UIStateType
+import com.debdut.composer.state.UIStateDefaultType
+import com.debdut.composer.composer.ui.WidgetId
 
 // Define Widget ID
 object CounterWidgetId : WidgetId {
@@ -388,8 +229,8 @@ data class CounterState(
 Define actions that will trigger state changes:
 
 ```kotlin
-import com.debdut.library.composer.action.ActionId
-import com.debdut.library.composer.action.StoreAction
+import com.debdut.composer.action.ActionId
+import com.debdut.composer.action.StoreAction
 
 // Define Action ID
 object IncrementActionId : ActionId {
@@ -417,12 +258,12 @@ data class DecrementAction(
 Implement a Store to manage your widget's state:
 
 ```kotlin
-import com.debdut.library.composer.store.Store
-import com.debdut.library.composer.store.StoreId
-import com.debdut.library.composer.store.StoreInitObj
-import com.debdut.library.composer.store.StoreWidgetModel
-import com.debdut.library.composer.action.ActionId
-import com.debdut.library.composer.action.StoreAction
+import com.debdut.composer.store.Store
+import com.debdut.composer.store.StoreId
+import com.debdut.composer.store.StoreInitObj
+import com.debdut.composer.store.StoreWidgetModel
+import com.debdut.composer.action.ActionId
+import com.debdut.composer.action.StoreAction
 
 // Define Store ID
 object CounterStoreId : StoreId {
@@ -475,7 +316,7 @@ class CounterStore : Store<CounterState, InitModel, WidgetModel>() {
 Create a factory to provide stores:
 
 ```kotlin
-import com.debdut.library.composer.store.factory.StoreFactory
+import com.debdut.composer.store.factory.StoreFactory
 
 class CounterStoreFactory : StoreFactory<CounterState, InitModel, WidgetModel> {
     
@@ -496,12 +337,12 @@ Create a ViewModel that extends the base composer ViewModel:
 
 ```kotlin
 import androidx.lifecycle.ViewModel
-import com.debdut.library.composer.composer.data.host.ListDataComposerHost
-import com.debdut.library.composer.composer.data.ListDataComposer
-import com.debdut.library.composer.composer.data.DataComposerActionHandler
-import com.debdut.library.composer.composer.data.DataComposerActionHolder
-import com.debdut.library.composer.action.Action
-import com.debdut.library.composer.viewmodel.ListDataComposerViewModel
+import com.debdut.composer.composer.data.host.ListDataComposerHost
+import com.debdut.composer.composer.data.ListDataComposer
+import com.debdut.composer.composer.data.DataComposerActionHandler
+import com.debdut.composer.composer.data.DataComposerActionHolder
+import com.debdut.composer.action.Action
+import com.debdut.composer.viewmodel.ListDataComposerViewModel
 
 class CounterViewModel(
     storeFactory: StoreFactory<CounterState, InitModel, WidgetModel>
@@ -530,11 +371,11 @@ import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.debdut.library.composer.composer.ui.ListUIComposer
-import com.debdut.library.composer.composer.data.host.ListDataComposerHost
-import com.debdut.library.composer.composer.ui.syntax.observeAsState
-import com.debdut.library.composer.composer.ui.syntax.observeAction
-import com.debdut.library.composer.composer.ui.syntax.dispatch
+import com.debdut.composer.composer.ui.ListUIComposer
+import com.debdut.composer.composer.data.host.ListDataComposerHost
+import com.debdut.composer.composer.ui.syntax.observeAsState
+import com.debdut.composer.composer.ui.syntax.observeAction
+import com.debdut.composer.composer.ui.syntax.dispatch
 
 class CounterFragment : Fragment(R.layout.fragment_counter), 
     ListUIComposer<CounterState, InitModel, WidgetModel> {
@@ -645,26 +486,26 @@ Composers orchestrate multiple Stores:
 
 The Composer library is organized into the following packages:
 
-- **`com.debdut.library.composer.store`** - Store implementation and management
+- **`com.debdut.composer.store`** - Store implementation and management
   - Core Store class and StoreId
   - StoreFactory for creating stores
   - Store lifecycle management
 
-- **`com.debdut.library.composer.action`** - Action definitions and routing
+- **`com.debdut.composer.action`** - Action definitions and routing
   - StoreAction, DataComposerAction, UIComposerAction
   - ActionId and action holders
   - Action routing mechanisms
 
-- **`com.debdut.library.composer.composer`** - Composer interfaces and implementations
+- **`com.debdut.composer.composer`** - Composer interfaces and implementations
   - DataComposer (Single, List, ListWithHeaderFooter variants)
   - UIComposer interfaces
   - Composer hosts and syntax extensions
 
-- **`com.debdut.library.composer.state`** - State management interfaces
+- **`com.debdut.composer.state`** - State management interfaces
   - UIState interface and implementations
   - State type markers (Header, Footer, Default)
 
-- **`com.debdut.library.composer.composer.ui`** - UI layer integration
+- **`com.debdut.composer.composer.ui`** - UI layer integration
   - WidgetId definitions
   - Base Fragment classes
   - Lifecycle-aware observation helpers
@@ -673,23 +514,23 @@ The Composer library is organized into the following packages:
 
 ```kotlin
 // Store
-import com.debdut.library.composer.store.Store
-import com.debdut.library.composer.store.StoreId
-import com.debdut.library.composer.store.StoreFactory
+import com.debdut.composer.store.Store
+import com.debdut.composer.store.StoreId
+import com.debdut.composer.store.StoreFactory
 
 // Actions
-import com.debdut.library.composer.action.StoreAction
-import com.debdut.library.composer.action.ActionId
+import com.debdut.composer.action.StoreAction
+import com.debdut.composer.action.ActionId
 
 // Composers
-import com.debdut.library.composer.composer.data.DataComposer
-import com.debdut.library.composer.composer.ui.UIComposer
+import com.debdut.composer.composer.data.DataComposer
+import com.debdut.composer.composer.ui.UIComposer
 
 // State
-import com.debdut.library.composer.state.UIState
+import com.debdut.composer.state.UIState
 
 // ViewModels
-import com.debdut.library.composer.viewmodel.ListDataComposerViewModel
+import com.debdut.composer.viewmodel.ListDataComposerViewModel
 ```
 
 ---
@@ -786,7 +627,7 @@ limitations under the License.
 
 ## 📊 Project Status
 
-This project is actively maintained and ready for production use. Current version: **1.0.0**
+This project is actively maintained and ready for production use. Current version: **2.0.0**
 
 ---
 

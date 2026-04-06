@@ -1,0 +1,335 @@
+public abstract interface class com/debdut/composer/action/Action {
+	public abstract fun getActionId ()Lcom/debdut/composer/action/ActionId;
+}
+
+public abstract interface class com/debdut/composer/action/ActionId {
+	public abstract fun getId ()Ljava/lang/String;
+}
+
+public abstract interface class com/debdut/composer/action/ComposerAction : com/debdut/composer/action/Action {
+}
+
+public abstract interface class com/debdut/composer/action/DataComposerAction : com/debdut/composer/action/ComposerAction {
+}
+
+public abstract interface class com/debdut/composer/action/StoreAction : com/debdut/composer/action/Action {
+}
+
+public abstract interface class com/debdut/composer/action/UIComposerAction : com/debdut/composer/action/ComposerAction {
+}
+
+public abstract interface class com/debdut/composer/action/holder/ActionHolder {
+	public abstract fun getAction ()Lcom/debdut/composer/action/Action;
+	public abstract fun getStoreId ()Lcom/debdut/composer/store/StoreId;
+}
+
+public final class com/debdut/composer/action/holder/DataComposerActionHolder : com/debdut/composer/action/holder/ActionHolder {
+	public fun <init> (Lcom/debdut/composer/action/DataComposerAction;Lcom/debdut/composer/store/StoreId;)V
+	public synthetic fun <init> (Lcom/debdut/composer/action/DataComposerAction;Lcom/debdut/composer/store/StoreId;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lcom/debdut/composer/action/DataComposerAction;
+	public final fun component2 ()Lcom/debdut/composer/store/StoreId;
+	public final fun copy (Lcom/debdut/composer/action/DataComposerAction;Lcom/debdut/composer/store/StoreId;)Lcom/debdut/composer/action/holder/DataComposerActionHolder;
+	public static synthetic fun copy$default (Lcom/debdut/composer/action/holder/DataComposerActionHolder;Lcom/debdut/composer/action/DataComposerAction;Lcom/debdut/composer/store/StoreId;ILjava/lang/Object;)Lcom/debdut/composer/action/holder/DataComposerActionHolder;
+	public fun equals (Ljava/lang/Object;)Z
+	public synthetic fun getAction ()Lcom/debdut/composer/action/Action;
+	public fun getAction ()Lcom/debdut/composer/action/DataComposerAction;
+	public fun getStoreId ()Lcom/debdut/composer/store/StoreId;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/debdut/composer/action/holder/StoreActionHolder : com/debdut/composer/action/holder/ActionHolder {
+	public fun <init> (Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/store/StoreId;)V
+	public final fun component1 ()Lcom/debdut/composer/action/StoreAction;
+	public final fun component2 ()Lcom/debdut/composer/store/StoreId;
+	public final fun copy (Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/store/StoreId;)Lcom/debdut/composer/action/holder/StoreActionHolder;
+	public static synthetic fun copy$default (Lcom/debdut/composer/action/holder/StoreActionHolder;Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/store/StoreId;ILjava/lang/Object;)Lcom/debdut/composer/action/holder/StoreActionHolder;
+	public fun equals (Ljava/lang/Object;)Z
+	public synthetic fun getAction ()Lcom/debdut/composer/action/Action;
+	public fun getAction ()Lcom/debdut/composer/action/StoreAction;
+	public fun getStoreId ()Lcom/debdut/composer/store/StoreId;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/debdut/composer/action/holder/UIComposerActionHolder : com/debdut/composer/action/holder/ActionHolder {
+	public fun <init> (Lcom/debdut/composer/action/UIComposerAction;Lcom/debdut/composer/store/StoreId;)V
+	public final fun component1 ()Lcom/debdut/composer/action/UIComposerAction;
+	public final fun component2 ()Lcom/debdut/composer/store/StoreId;
+	public final fun copy (Lcom/debdut/composer/action/UIComposerAction;Lcom/debdut/composer/store/StoreId;)Lcom/debdut/composer/action/holder/UIComposerActionHolder;
+	public static synthetic fun copy$default (Lcom/debdut/composer/action/holder/UIComposerActionHolder;Lcom/debdut/composer/action/UIComposerAction;Lcom/debdut/composer/store/StoreId;ILjava/lang/Object;)Lcom/debdut/composer/action/holder/UIComposerActionHolder;
+	public fun equals (Ljava/lang/Object;)Z
+	public synthetic fun getAction ()Lcom/debdut/composer/action/Action;
+	public fun getAction ()Lcom/debdut/composer/action/UIComposerAction;
+	public fun getStoreId ()Lcom/debdut/composer/store/StoreId;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/debdut/composer/composer/Composer {
+}
+
+public abstract interface class com/debdut/composer/composer/data/DataComposer : com/debdut/composer/composer/Composer {
+	public abstract fun currentWidgetIds ()Ljava/util/List;
+	public abstract fun dispatch (Lcom/debdut/composer/action/Action;)V
+	public abstract fun dispatchToStore (Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/store/StoreId;)V
+	public abstract fun dispatchToWidget (Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/composer/ui/WidgetId;)V
+	public abstract fun dispose ()V
+	public abstract fun getUiActionHolder ()Lkotlinx/coroutines/flow/SharedFlow;
+	public abstract fun getUiStateFlow ()Lkotlinx/coroutines/flow/StateFlow;
+	public abstract fun initialiseWithInitModel (Lcom/debdut/composer/store/StoreInitObj;)V
+	public abstract fun initialiseWithWidgets (Ljava/util/List;Lcom/debdut/composer/store/StoreInitObj;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun suspendBatchDispatchToWidget (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun suspendDispatch (Lcom/debdut/composer/action/Action;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun suspendDispatchToStore (Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/store/StoreId;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun suspendDispatchToWidget (Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/composer/ui/WidgetId;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun updateWidgets (Ljava/util/List;Lcom/debdut/composer/store/StoreInitObj;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/debdut/composer/composer/data/DataComposerActionHandler {
+	public abstract fun receiveAction (Lcom/debdut/composer/action/holder/DataComposerActionHolder;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun receiveAllActions (Lcom/debdut/composer/action/Action;)V
+}
+
+public abstract interface class com/debdut/composer/composer/data/ListDataComposer : com/debdut/composer/composer/data/DataComposer {
+}
+
+public abstract interface class com/debdut/composer/composer/data/ListWithHeaderAndFooterDataComposer : com/debdut/composer/composer/data/ListDataComposer {
+	public abstract fun getFooterState ()Lkotlinx/coroutines/flow/StateFlow;
+	public abstract fun getHeaderState ()Lkotlinx/coroutines/flow/StateFlow;
+}
+
+public abstract interface class com/debdut/composer/composer/data/SingleDataComposer : com/debdut/composer/composer/data/DataComposer {
+}
+
+public abstract interface class com/debdut/composer/composer/data/host/DataComposerHost {
+	public abstract fun getContainer ()Lcom/debdut/composer/composer/data/DataComposer;
+}
+
+public abstract interface class com/debdut/composer/composer/data/host/ListDataComposerHost : com/debdut/composer/composer/data/host/DataComposerHost {
+	public abstract fun getContainer ()Lcom/debdut/composer/composer/data/ListDataComposer;
+}
+
+public abstract interface class com/debdut/composer/composer/data/host/ListWithHeaderAndFooterDataComposerHost : com/debdut/composer/composer/data/host/ListDataComposerHost {
+	public abstract fun getContainer ()Lcom/debdut/composer/composer/data/ListWithHeaderAndFooterDataComposer;
+}
+
+public abstract interface class com/debdut/composer/composer/data/host/SingleDataComposerHost : com/debdut/composer/composer/data/host/DataComposerHost {
+	public abstract fun getContainer ()Lcom/debdut/composer/composer/data/SingleDataComposer;
+}
+
+public final class com/debdut/composer/composer/data/model/StoreActionWidgetIdPair {
+	public fun <init> (Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/composer/ui/WidgetId;)V
+	public final fun component1 ()Lcom/debdut/composer/action/StoreAction;
+	public final fun component2 ()Lcom/debdut/composer/composer/ui/WidgetId;
+	public final fun copy (Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/composer/ui/WidgetId;)Lcom/debdut/composer/composer/data/model/StoreActionWidgetIdPair;
+	public static synthetic fun copy$default (Lcom/debdut/composer/composer/data/model/StoreActionWidgetIdPair;Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/composer/ui/WidgetId;ILjava/lang/Object;)Lcom/debdut/composer/composer/data/model/StoreActionWidgetIdPair;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAction ()Lcom/debdut/composer/action/StoreAction;
+	public final fun getWidgetId ()Lcom/debdut/composer/composer/ui/WidgetId;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/debdut/composer/composer/data/syntax/DataComposerHostSyntaxKt {
+	public static final fun dispatch (Lcom/debdut/composer/composer/data/host/DataComposerHost;Lcom/debdut/composer/action/Action;)V
+	public static final fun dispatch (Lcom/debdut/composer/composer/data/host/DataComposerHost;Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/composer/ui/WidgetId;)V
+	public static final fun dispatch (Lcom/debdut/composer/composer/data/host/DataComposerHost;Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/store/StoreId;)V
+	public static final fun getCurrentWidgetIds (Lcom/debdut/composer/composer/data/host/DataComposerHost;)Ljava/util/List;
+	public static final fun getUiActionHolder (Lcom/debdut/composer/composer/data/host/DataComposerHost;)Lkotlinx/coroutines/flow/SharedFlow;
+	public static final fun getUiState (Lcom/debdut/composer/composer/data/host/DataComposerHost;)Lkotlinx/coroutines/flow/StateFlow;
+	public static final fun init (Lcom/debdut/composer/composer/data/host/DataComposerHost;Ljava/util/List;Lcom/debdut/composer/store/StoreInitObj;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun observeActions (Lcom/debdut/composer/composer/data/host/DataComposerHost;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function1;)V
+	public static final fun observeAsState (Lcom/debdut/composer/composer/data/host/DataComposerHost;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function1;)V
+	public static final fun suspendBatchDispatch (Lcom/debdut/composer/composer/data/host/DataComposerHost;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun suspendDispatch (Lcom/debdut/composer/composer/data/host/DataComposerHost;Lcom/debdut/composer/action/Action;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun suspendDispatch (Lcom/debdut/composer/composer/data/host/DataComposerHost;Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/composer/ui/WidgetId;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun suspendDispatch (Lcom/debdut/composer/composer/data/host/DataComposerHost;Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/store/StoreId;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun updateWidget (Lcom/debdut/composer/composer/data/host/DataComposerHost;Ljava/util/List;Lcom/debdut/composer/store/StoreInitObj;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/debdut/composer/composer/data/syntax/ListWithHeaderAndFooterDataComposerHostSyntaxKt {
+	public static final fun getFooterState (Lcom/debdut/composer/composer/data/host/ListWithHeaderAndFooterDataComposerHost;)Lkotlinx/coroutines/flow/StateFlow;
+	public static final fun getHeaderState (Lcom/debdut/composer/composer/data/host/ListWithHeaderAndFooterDataComposerHost;)Lkotlinx/coroutines/flow/StateFlow;
+	public static final fun observeFooterState (Lcom/debdut/composer/composer/data/host/ListWithHeaderAndFooterDataComposerHost;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function1;)V
+	public static final fun observeHeaderState (Lcom/debdut/composer/composer/data/host/ListWithHeaderAndFooterDataComposerHost;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class com/debdut/composer/composer/data/syntax/SingleDataComposerHostSyntaxKt {
+	public static final fun observeState (Lcom/debdut/composer/composer/data/host/SingleDataComposerHost;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract interface class com/debdut/composer/composer/ui/ChildWidgetId : com/debdut/composer/composer/ui/NoStoreWidgetId {
+}
+
+public abstract interface class com/debdut/composer/composer/ui/GroupWidget : com/debdut/composer/composer/ui/WidgetId {
+	public abstract fun getBottomChildren ()Ljava/util/List;
+	public abstract fun getHostId ()Lcom/debdut/composer/composer/ui/HostWidgetId;
+	public abstract fun getTopChildren ()Ljava/util/List;
+}
+
+public abstract interface class com/debdut/composer/composer/ui/HostWidgetId : com/debdut/composer/composer/ui/WidgetId {
+}
+
+public abstract interface class com/debdut/composer/composer/ui/ListUIComposer : com/debdut/composer/composer/ui/UIComposer {
+	public abstract fun getContainer ()Lcom/debdut/composer/composer/data/host/ListDataComposerHost;
+}
+
+public abstract interface class com/debdut/composer/composer/ui/ListUIComposerWithHeaderAndFooter : com/debdut/composer/composer/ui/UIComposer {
+	public abstract fun getContainer ()Lcom/debdut/composer/composer/data/host/ListWithHeaderAndFooterDataComposerHost;
+}
+
+public abstract interface class com/debdut/composer/composer/ui/NoStoreWidgetId : com/debdut/composer/composer/ui/WidgetId {
+	public abstract fun getUiState ()Lcom/debdut/composer/state/UIState;
+}
+
+public abstract interface class com/debdut/composer/composer/ui/SingleUIComposer : com/debdut/composer/composer/ui/UIComposer {
+	public abstract fun getContainer ()Lcom/debdut/composer/composer/data/host/SingleDataComposerHost;
+}
+
+public abstract interface class com/debdut/composer/composer/ui/UIComposer : com/debdut/composer/composer/Composer {
+	public abstract fun getContainer ()Lcom/debdut/composer/composer/data/host/DataComposerHost;
+}
+
+public abstract interface class com/debdut/composer/composer/ui/WidgetId {
+	public static final field Companion Lcom/debdut/composer/composer/ui/WidgetId$Companion;
+	public abstract fun getId ()Ljava/lang/String;
+}
+
+public final class com/debdut/composer/composer/ui/WidgetId$Companion {
+	public final fun getEmpty ()Lcom/debdut/composer/composer/ui/WidgetId;
+}
+
+public final class com/debdut/composer/composer/ui/syntax/ListUIComposerWithHeaderAndFooterSyntaxKt {
+	public static final fun observeFooterState (Lcom/debdut/composer/composer/ui/ListUIComposerWithHeaderAndFooter;Landroidx/lifecycle/LifecycleOwner;Landroidx/lifecycle/Lifecycle$State;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun observeFooterState$default (Lcom/debdut/composer/composer/ui/ListUIComposerWithHeaderAndFooter;Landroidx/lifecycle/LifecycleOwner;Landroidx/lifecycle/Lifecycle$State;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static final fun observeHeaderState (Lcom/debdut/composer/composer/ui/ListUIComposerWithHeaderAndFooter;Landroidx/lifecycle/LifecycleOwner;Landroidx/lifecycle/Lifecycle$State;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun observeHeaderState$default (Lcom/debdut/composer/composer/ui/ListUIComposerWithHeaderAndFooter;Landroidx/lifecycle/LifecycleOwner;Landroidx/lifecycle/Lifecycle$State;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public final class com/debdut/composer/composer/ui/syntax/UIComposerSyntaxKt {
+	public static final fun dispatch (Lcom/debdut/composer/composer/ui/UIComposer;Lcom/debdut/composer/action/DataComposerAction;)V
+	public static final fun dispatch (Lcom/debdut/composer/composer/ui/UIComposer;Lcom/debdut/composer/action/StoreAction;)V
+	public static final fun dispatch (Lcom/debdut/composer/composer/ui/UIComposer;Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/store/StoreId;)V
+	public static final fun observeAction (Lcom/debdut/composer/composer/ui/UIComposer;Landroidx/lifecycle/LifecycleOwner;Landroidx/lifecycle/Lifecycle$State;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun observeAction$default (Lcom/debdut/composer/composer/ui/UIComposer;Landroidx/lifecycle/LifecycleOwner;Landroidx/lifecycle/Lifecycle$State;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static final fun observeAsState (Lcom/debdut/composer/composer/ui/UIComposer;Landroidx/lifecycle/LifecycleOwner;Landroidx/lifecycle/Lifecycle$State;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun observeAsState$default (Lcom/debdut/composer/composer/ui/UIComposer;Landroidx/lifecycle/LifecycleOwner;Landroidx/lifecycle/Lifecycle$State;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public final class com/debdut/composer/extensions/HostExtensionsKt {
+	public static final fun listDataComposer (Lcom/debdut/composer/store/factory/StoreFactory;Lkotlinx/coroutines/CoroutineScope;Lcom/debdut/composer/composer/data/DataComposerActionHandler;)Lcom/debdut/composer/composer/data/ListDataComposer;
+	public static final fun listWithHeaderAndFooterDataComposer (Lcom/debdut/composer/store/factory/StoreFactory;Lkotlinx/coroutines/CoroutineScope;Lcom/debdut/composer/composer/data/DataComposerActionHandler;)Lcom/debdut/composer/composer/data/ListWithHeaderAndFooterDataComposer;
+	public static final fun singleDataComposer (Lcom/debdut/composer/store/factory/StoreFactory;Lkotlinx/coroutines/CoroutineScope;Lcom/debdut/composer/composer/data/DataComposerActionHandler;)Lcom/debdut/composer/composer/data/SingleDataComposer;
+}
+
+public abstract interface class com/debdut/composer/state/FooterUIStateType : com/debdut/composer/state/UIStateType {
+}
+
+public abstract interface class com/debdut/composer/state/HeaderUIStateType : com/debdut/composer/state/UIStateType {
+}
+
+public final class com/debdut/composer/state/NoOpsUIState : com/debdut/composer/state/UIState {
+	public fun <init> (Lcom/debdut/composer/state/UIStateType;ZLcom/debdut/composer/composer/ui/WidgetId;)V
+	public synthetic fun <init> (Lcom/debdut/composer/state/UIStateType;ZLcom/debdut/composer/composer/ui/WidgetId;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lcom/debdut/composer/state/UIStateType;
+	public final fun component2 ()Z
+	public final fun component3 ()Lcom/debdut/composer/composer/ui/WidgetId;
+	public final fun copy (Lcom/debdut/composer/state/UIStateType;ZLcom/debdut/composer/composer/ui/WidgetId;)Lcom/debdut/composer/state/NoOpsUIState;
+	public static synthetic fun copy$default (Lcom/debdut/composer/state/NoOpsUIState;Lcom/debdut/composer/state/UIStateType;ZLcom/debdut/composer/composer/ui/WidgetId;ILjava/lang/Object;)Lcom/debdut/composer/state/NoOpsUIState;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getType ()Lcom/debdut/composer/state/UIStateType;
+	public fun getVisible ()Z
+	public fun getWidgetId ()Lcom/debdut/composer/composer/ui/WidgetId;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/debdut/composer/state/UIState {
+	public abstract fun getType ()Lcom/debdut/composer/state/UIStateType;
+	public abstract fun getVisible ()Z
+	public abstract fun getWidgetId ()Lcom/debdut/composer/composer/ui/WidgetId;
+}
+
+public final class com/debdut/composer/state/UIStateDefaultType : com/debdut/composer/state/UIStateType {
+	public static final field INSTANCE Lcom/debdut/composer/state/UIStateDefaultType;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/debdut/composer/state/UIStateType {
+}
+
+public abstract class com/debdut/composer/store/Store {
+	public fun <init> ()V
+	public fun clear ()V
+	public abstract fun getStoreId ()Lcom/debdut/composer/store/StoreId;
+	public abstract fun getSubscribedStoreAction ()Ljava/util/Set;
+	public abstract fun initialise (Lcom/debdut/composer/store/StoreInitObj;)V
+	public fun invokeOnStateUpdate (Lcom/debdut/composer/state/UIState;Lcom/debdut/composer/state/UIState;)V
+	public abstract fun receive (Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/store/StoreId;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun reset ()V
+}
+
+public abstract interface class com/debdut/composer/store/StoreId {
+	public static final field Companion Lcom/debdut/composer/store/StoreId$Companion;
+	public abstract fun getId ()Ljava/lang/String;
+}
+
+public final class com/debdut/composer/store/StoreId$Companion {
+	public final fun getEmpty ()Lcom/debdut/composer/store/StoreId;
+}
+
+public abstract interface class com/debdut/composer/store/StoreInitObj {
+}
+
+public abstract interface class com/debdut/composer/store/StoreWidgetModel {
+	public abstract fun getWidgetId ()Ljava/lang/String;
+}
+
+public abstract interface class com/debdut/composer/store/factory/StoreFactory {
+	public abstract fun get (Lcom/debdut/composer/composer/ui/WidgetId;)Lcom/debdut/composer/store/Store;
+}
+
+public final class com/debdut/composer/store/syntax/StoreSyntaxKt {
+	public static final fun dispatch (Lcom/debdut/composer/store/Store;Lcom/debdut/composer/action/ComposerAction;)Z
+	public static final fun emitState (Lcom/debdut/composer/store/Store;Lkotlin/jvm/functions/Function0;)V
+	public static final fun getCurrentState (Lcom/debdut/composer/store/Store;)Lcom/debdut/composer/state/UIState;
+	public static final fun getStoreScope (Lcom/debdut/composer/store/Store;)Lkotlinx/coroutines/CoroutineScope;
+	public static final fun send (Lcom/debdut/composer/store/Store;Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/store/StoreId;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun send (Lcom/debdut/composer/store/Store;Lcom/debdut/composer/action/StoreAction;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun suspendDispatch (Lcom/debdut/composer/store/Store;Lcom/debdut/composer/action/ComposerAction;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun updateState (Lcom/debdut/composer/store/Store;Lkotlin/jvm/functions/Function1;)Lcom/debdut/composer/state/UIState;
+}
+
+public abstract class com/debdut/composer/uicomponents/ListUIComposerFragment : androidx/fragment/app/Fragment, com/debdut/composer/composer/ui/ListUIComposer {
+	public fun <init> (I)V
+	public abstract fun handleUIAction (Lcom/debdut/composer/action/holder/UIComposerActionHolder;)V
+	public fun onViewCreated (Landroid/view/View;Landroid/os/Bundle;)V
+	public abstract fun render (Ljava/util/List;)V
+}
+
+public abstract class com/debdut/composer/uicomponents/ListUIComposerWithHeaderAndFooterFragment : com/debdut/composer/uicomponents/ListUIComposerFragment, com/debdut/composer/composer/ui/ListUIComposerWithHeaderAndFooter {
+	public fun <init> (I)V
+	public abstract fun getContainer ()Lcom/debdut/composer/composer/data/host/ListWithHeaderAndFooterDataComposerHost;
+	public fun onViewCreated (Landroid/view/View;Landroid/os/Bundle;)V
+	public abstract fun renderFooter (Ljava/util/List;)V
+	public abstract fun renderHeader (Ljava/util/List;)V
+}
+
+public abstract class com/debdut/composer/viewmodel/ListDataComposerViewModel : androidx/lifecycle/ViewModel, com/debdut/composer/composer/data/host/ListDataComposerHost {
+	public fun <init> (Lcom/debdut/composer/store/factory/StoreFactory;)V
+	public synthetic fun getContainer ()Lcom/debdut/composer/composer/data/DataComposer;
+	public fun getContainer ()Lcom/debdut/composer/composer/data/ListDataComposer;
+	public abstract fun getDataComposerActionHandler ()Lcom/debdut/composer/composer/data/DataComposerActionHandler;
+}
+
+public abstract class com/debdut/composer/viewmodel/ListWithHeaderAndFooterDataComposerViewModel : androidx/lifecycle/ViewModel, com/debdut/composer/composer/data/host/ListWithHeaderAndFooterDataComposerHost {
+	public fun <init> (Lcom/debdut/composer/store/factory/StoreFactory;)V
+	public synthetic fun getContainer ()Lcom/debdut/composer/composer/data/DataComposer;
+	public synthetic fun getContainer ()Lcom/debdut/composer/composer/data/ListDataComposer;
+	public fun getContainer ()Lcom/debdut/composer/composer/data/ListWithHeaderAndFooterDataComposer;
+	protected abstract fun getDataComposerActionHandler ()Lcom/debdut/composer/composer/data/DataComposerActionHandler;
+}
+
