@@ -95,7 +95,6 @@ data class DecrementAction(
 import com.debdut.composer.store.Store
 import com.debdut.composer.store.StoreId
 import com.debdut.composer.store.StoreInitObj
-import com.debdut.composer.store.StoreWidgetModel
 import com.debdut.composer.action.ActionId
 import com.debdut.composer.action.StoreAction
 
@@ -105,11 +104,7 @@ object CounterStoreId : StoreId {
 
 data class InitModel : StoreInitObj
 
-data class WidgetModel : StoreWidgetModel {
-    override val widgetId: String = CounterWidgetId.id
-}
-
-class CounterStore : Store<CounterState, InitModel, WidgetModel>() {
+class CounterStore : Store<CounterState, InitModel>() {
 
     override val storeId: StoreId = CounterStoreId
 
@@ -118,7 +113,7 @@ class CounterStore : Store<CounterState, InitModel, WidgetModel>() {
         DecrementActionId
     )
 
-    override fun initialise(globalModel: InitModel) {
+    override fun initialize(globalModel: InitModel) {
         emitState {
             CounterState(count = 0)
         }
@@ -146,13 +141,11 @@ class CounterStore : Store<CounterState, InitModel, WidgetModel>() {
 ```kotlin
 import com.debdut.composer.store.factory.StoreFactory
 
-class CounterStoreFactory : StoreFactory<CounterState, InitModel, WidgetModel> {
+class CounterStoreFactory : StoreFactory<CounterState, InitModel> {
 
-    private val counterStore = CounterStore()
-
-    override fun get(widgetId: WidgetId): Store<CounterState, InitModel, WidgetModel> {
+    override fun get(widgetId: WidgetId): Store<CounterState, InitModel> {
         return when (widgetId) {
-            CounterWidgetId -> counterStore
+            CounterWidgetId -> CounterStore()
             else -> throw IllegalArgumentException("Unknown widget: $widgetId")
         }
     }
@@ -167,8 +160,8 @@ import com.debdut.composer.composer.data.DataComposerActionHandler
 import com.debdut.composer.action.Action
 
 class CounterViewModel(
-    storeFactory: StoreFactory<CounterState, InitModel, WidgetModel>
-) : ListDataComposerViewModel<CounterState, InitModel, WidgetModel>(storeFactory),
+    storeFactory: StoreFactory<CounterState, InitModel>
+) : ListDataComposerViewModel<CounterState, InitModel>(storeFactory),
     DataComposerActionHandler {
 
     override val dataComposerActionHandler: DataComposerActionHandler = this
@@ -192,13 +185,13 @@ import com.debdut.composer.composer.ui.syntax.observeAction
 import com.debdut.composer.composer.ui.syntax.dispatch
 
 class CounterFragment : Fragment(R.layout.fragment_counter),
-    ListUIComposer<CounterState, InitModel, WidgetModel> {
+    ListUIComposer<CounterState, InitModel> {
 
     private val viewModel: CounterViewModel by viewModels {
         CounterViewModelFactory(CounterStoreFactory())
     }
 
-    override val container: ListDataComposerHost<CounterState, InitModel, WidgetModel>
+    override val container: ListDataComposerHost<CounterState, InitModel>
         get() = viewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -246,7 +239,7 @@ If using Hilt, Koin, or similar:
 object CounterModule {
 
     @Provides
-    fun provideCounterStoreFactory(): StoreFactory<CounterState, InitModel, WidgetModel> {
+    fun provideCounterStoreFactory(): StoreFactory<CounterState, InitModel> {
         return CounterStoreFactory()
     }
 }

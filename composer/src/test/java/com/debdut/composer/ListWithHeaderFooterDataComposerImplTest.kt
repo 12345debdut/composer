@@ -69,11 +69,11 @@ class ListWithHeaderFooterDataComposerImplTest {
 
     // --- Stores ---
 
-    class HeaderStore : Store<TestState, TestInitObj, TestInitObj>() {
+    class HeaderStore : Store<TestState, TestInitObj>() {
         override val storeId: StoreId = HeaderStoreId
         override val subscribedStoreAction: Set<ActionId> = setOf(UpdateActionId)
 
-        override fun initialise(globalModel: TestInitObj) {
+        override fun initialize(globalModel: TestInitObj) {
             emitState { TestState(type = TestHeaderType, widgetId = HeaderWidgetId, value = "header-init") }
         }
 
@@ -84,11 +84,11 @@ class ListWithHeaderFooterDataComposerImplTest {
         }
     }
 
-    class FooterStore : Store<TestState, TestInitObj, TestInitObj>() {
+    class FooterStore : Store<TestState, TestInitObj>() {
         override val storeId: StoreId = FooterStoreId
         override val subscribedStoreAction: Set<ActionId> = setOf(UpdateActionId)
 
-        override fun initialise(globalModel: TestInitObj) {
+        override fun initialize(globalModel: TestInitObj) {
             emitState { TestState(type = TestFooterType, widgetId = FooterWidgetId, value = "footer-init") }
         }
 
@@ -99,11 +99,11 @@ class ListWithHeaderFooterDataComposerImplTest {
         }
     }
 
-    class BodyStore : Store<TestState, TestInitObj, TestInitObj>() {
+    class BodyStore : Store<TestState, TestInitObj>() {
         override val storeId: StoreId = BodyStoreId
         override val subscribedStoreAction: Set<ActionId> = setOf(UpdateActionId)
 
-        override fun initialise(globalModel: TestInitObj) {
+        override fun initialize(globalModel: TestInitObj) {
             emitState { TestState(type = UIStateDefaultType, widgetId = BodyWidgetId, value = "body-init") }
         }
 
@@ -114,8 +114,8 @@ class ListWithHeaderFooterDataComposerImplTest {
         }
     }
 
-    class TestStoreFactory : StoreFactory<TestState, TestInitObj, TestInitObj> {
-        override fun get(widgetId: WidgetId): Store<TestState, TestInitObj, TestInitObj> = when (widgetId) {
+    class TestStoreFactory : StoreFactory<TestState, TestInitObj> {
+        override fun get(widgetId: WidgetId): Store<TestState, TestInitObj> = when (widgetId) {
             HeaderWidgetId -> HeaderStore()
             FooterWidgetId -> FooterStore()
             BodyWidgetId -> BodyStore()
@@ -135,7 +135,7 @@ class ListWithHeaderFooterDataComposerImplTest {
         val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
         val composer = listWithHeaderAndFooterDataComposer(TestStoreFactory(), scope, NoOpActionHandler())
 
-        composer.initialiseWithWidgets(listOf(HeaderWidgetId, FooterWidgetId, BodyWidgetId), TestInitObj)
+        composer.initializeWithWidgets(listOf(HeaderWidgetId, FooterWidgetId, BodyWidgetId), TestInitObj)
         advanceUntilIdle()
 
         val headerStates = composer.headerState.value
@@ -152,7 +152,7 @@ class ListWithHeaderFooterDataComposerImplTest {
         val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
         val composer = listWithHeaderAndFooterDataComposer(TestStoreFactory(), scope, NoOpActionHandler())
 
-        composer.initialiseWithWidgets(listOf(HeaderWidgetId, FooterWidgetId, BodyWidgetId), TestInitObj)
+        composer.initializeWithWidgets(listOf(HeaderWidgetId, FooterWidgetId, BodyWidgetId), TestInitObj)
         advanceUntilIdle()
 
         val footerStates = composer.footerState.value
@@ -169,7 +169,7 @@ class ListWithHeaderFooterDataComposerImplTest {
         val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
         val composer = listWithHeaderAndFooterDataComposer(TestStoreFactory(), scope, NoOpActionHandler())
 
-        composer.initialiseWithWidgets(listOf(HeaderWidgetId, FooterWidgetId, BodyWidgetId), TestInitObj)
+        composer.initializeWithWidgets(listOf(HeaderWidgetId, FooterWidgetId, BodyWidgetId), TestInitObj)
         advanceUntilIdle()
 
         val bodyStates = composer.uiStateFlow.value
@@ -186,7 +186,7 @@ class ListWithHeaderFooterDataComposerImplTest {
         val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
         val composer = listWithHeaderAndFooterDataComposer(TestStoreFactory(), scope, NoOpActionHandler())
 
-        composer.initialiseWithWidgets(listOf(HeaderWidgetId, FooterWidgetId, BodyWidgetId), TestInitObj)
+        composer.initializeWithWidgets(listOf(HeaderWidgetId, FooterWidgetId, BodyWidgetId), TestInitObj)
         advanceUntilIdle()
 
         assertEquals(1, composer.headerState.value.size)
@@ -202,7 +202,7 @@ class ListWithHeaderFooterDataComposerImplTest {
         val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
         val composer = listWithHeaderAndFooterDataComposer(TestStoreFactory(), scope, NoOpActionHandler())
 
-        composer.initialiseWithWidgets(listOf(HeaderWidgetId, FooterWidgetId, BodyWidgetId), TestInitObj)
+        composer.initializeWithWidgets(listOf(HeaderWidgetId, FooterWidgetId, BodyWidgetId), TestInitObj)
         advanceUntilIdle()
 
         composer.dispose()

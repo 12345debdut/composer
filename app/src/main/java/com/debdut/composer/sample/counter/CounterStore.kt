@@ -9,7 +9,7 @@ import com.debdut.composer.store.syntax.emitState
 import com.debdut.composer.store.syntax.suspendDispatch
 import com.debdut.composer.store.syntax.updateState
 
-class CounterStore : Store<CounterState, CounterInitObj, CounterInitObj>() {
+class CounterStore : Store<CounterState, CounterInitObj>() {
 
     override val storeId: StoreId = CounterStoreId
 
@@ -19,7 +19,7 @@ class CounterStore : Store<CounterState, CounterInitObj, CounterInitObj>() {
         ResetActionId
     )
 
-    override fun initialise(globalModel: CounterInitObj) {
+    override fun initialize(globalModel: CounterInitObj) {
         emitState {
             CounterState(
                 count = globalModel.initialCount,

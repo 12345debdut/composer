@@ -37,6 +37,6 @@ import com.debdut.composer.store.StoreInitObj
  * @see ListWithHeaderAndFooterDataComposer
  * @see ListWithHeaderAndFooterDataComposerViewModel
  */
-public interface ListWithHeaderAndFooterDataComposerHost<UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj>: ListDataComposerHost<UISTATE, INITDATA,STOREMODEL> {
-    public override val container: ListWithHeaderAndFooterDataComposer<UISTATE, INITDATA,STOREMODEL>
+public interface ListWithHeaderAndFooterDataComposerHost<UISTATE: UIState, INITDATA: StoreInitObj>: ListDataComposerHost<UISTATE, INITDATA> {
+    public override val container: ListWithHeaderAndFooterDataComposer<UISTATE, INITDATA>
 }

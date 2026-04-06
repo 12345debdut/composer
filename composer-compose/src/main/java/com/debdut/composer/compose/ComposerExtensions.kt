@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.debdut.composer.ExperimentalComposerApi
 import com.debdut.composer.action.holder.UIComposerActionHolder
 import com.debdut.composer.composer.data.host.DataComposerHost
 import com.debdut.composer.state.UIState
@@ -32,7 +33,7 @@ import kotlinx.coroutines.flow.StateFlow
  * @return A [State] containing the current list of UI states
  */
 @Composable
-public fun <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL : StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.collectAsState(): State<List<UISTATE>> {
+public fun <UISTATE : UIState, INITDATA : StoreInitObj> DataComposerHost<UISTATE, INITDATA>.collectAsState(): State<List<UISTATE>> {
     return container.uiStateFlow.collectAsStateWithLifecycle()
 }
 
@@ -44,8 +45,9 @@ public fun <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL : StoreInitOb
  *
  * @return A [State] containing the current list of UI states
  */
+@ExperimentalComposerApi
 @Composable
-public fun <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL : StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.collectAsStateNoLifecycle(): State<List<UISTATE>> {
+public fun <UISTATE : UIState, INITDATA : StoreInitObj> DataComposerHost<UISTATE, INITDATA>.collectAsStateNoLifecycle(): State<List<UISTATE>> {
     return container.uiStateFlow.collectAsState()
 }
 
@@ -54,7 +56,7 @@ public fun <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL : StoreInitOb
  *
  * Useful when you need the flow directly rather than as Compose state.
  */
-public val <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL : StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.uiStateFlow: StateFlow<List<UISTATE>>
+public val <UISTATE : UIState, INITDATA : StoreInitObj> DataComposerHost<UISTATE, INITDATA>.uiStateFlow: StateFlow<List<UISTATE>>
     get() = container.uiStateFlow
 
 /**
@@ -62,5 +64,5 @@ public val <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL : StoreInitOb
  *
  * Use with [CollectSideEffect] to handle side effects in Compose.
  */
-public val <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL : StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.uiActionFlow: SharedFlow<UIComposerActionHolder>
+public val <UISTATE : UIState, INITDATA : StoreInitObj> DataComposerHost<UISTATE, INITDATA>.uiActionFlow: SharedFlow<UIComposerActionHolder>
     get() = container.uiActionHolder

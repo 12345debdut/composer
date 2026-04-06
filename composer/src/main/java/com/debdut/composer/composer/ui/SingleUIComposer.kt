@@ -12,7 +12,7 @@ import com.debdut.composer.store.StoreInitObj
  *
  * ## Usage
  * ```kotlin
- * class DetailFragment : Fragment(), SingleUIComposer<DetailState, DetailInitModel, DetailWidgetModel> {
+ * class DetailFragment : Fragment(), SingleUIComposer<DetailState, DetailInitModel> {
  *
  *     private val viewModel: DetailViewModel by viewModels()
  *
@@ -34,6 +34,6 @@ import com.debdut.composer.store.StoreInitObj
  * @see UIComposer
  * @see SingleDataComposerHost
  */
-public interface SingleUIComposer<UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj>: UIComposer<UISTATE, INITDATA,STOREMODEL> {
-    public override val container: SingleDataComposerHost<UISTATE, INITDATA,STOREMODEL>
+public interface SingleUIComposer<UISTATE: UIState, INITDATA: StoreInitObj>: UIComposer<UISTATE, INITDATA> {
+    public override val container: SingleDataComposerHost<UISTATE, INITDATA>
 }

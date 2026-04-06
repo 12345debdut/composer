@@ -4,9 +4,9 @@ import com.debdut.composer.composer.ui.WidgetId
 import com.debdut.composer.store.Store
 import com.debdut.composer.store.factory.StoreFactory
 
-class CounterStoreFactory : StoreFactory<CounterState, CounterInitObj, CounterInitObj> {
+class CounterStoreFactory : StoreFactory<CounterState, CounterInitObj> {
 
-    override fun get(widgetId: WidgetId): Store<CounterState, CounterInitObj, CounterInitObj> {
+    override fun get(widgetId: WidgetId): Store<CounterState, CounterInitObj> {
         return when (widgetId) {
             CounterWidgetId -> CounterStore()
             else -> throw IllegalArgumentException("Unknown widget: $widgetId")

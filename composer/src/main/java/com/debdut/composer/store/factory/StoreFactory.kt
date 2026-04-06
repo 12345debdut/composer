@@ -71,13 +71,12 @@ import com.debdut.composer.store.StoreInitObj
  *
  * @param UISTATE The base UI state type for all stores in this feature
  * @param INITOBJ The initialization data type
- * @param STOREMODEL The widget model type
  *
  * @see Store
  * @see WidgetId
  * @see DataComposer
  */
-public interface StoreFactory<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODEL: StoreInitObj> {
+public interface StoreFactory<UISTATE: UIState, INITOBJ: StoreInitObj> {
 
     /**
      * Get or create a [Store] instance for the given [WidgetId].
@@ -86,5 +85,5 @@ public interface StoreFactory<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODE
      * @return The Store instance that manages state for this widget
      * @throws IllegalArgumentException if no Store is registered for this widgetId
      */
-    public fun get(widgetId: WidgetId): Store<UISTATE, INITOBJ, STOREMODEL>
+    public fun get(widgetId: WidgetId): Store<UISTATE, INITOBJ>
 }

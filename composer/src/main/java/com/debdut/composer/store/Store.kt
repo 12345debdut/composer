@@ -24,12 +24,11 @@ import kotlinx.coroutines.CoroutineScope
  * ## Type Parameters
  * - [UISTATE]: The UI state type this Store manages (must extend [UIState])
  * - [INITMODEL]: The initialization data type passed during setup
- * - [STOREMODEL]: Additional model type for widget configuration
  *
  * ## Key Abstract Members
  * - [storeId]: Unique identifier for this Store
  * - [subscribedStoreAction]: Set of [ActionId]s this Store responds to
- * - [initialise]: Sets up the initial state from the init model
+ * - [initialize]: Sets up the initial state from the init model
  * - [receive]: Handles incoming [StoreAction]s
  *
  * ## State Management
@@ -63,7 +62,7 @@ import kotlinx.coroutines.CoroutineScope
  * ```kotlin
  * class QuantityWidgetStore @Inject constructor(
  *     private val repository: QuantityRepository
- * ) : Store<QuantityState, OrderInitModel, OrderWidgetModel>() {
+ * ) : Store<QuantityState, OrderInitModel>() {
  *
  *     override val storeId: StoreId = QuantityStoreId
  *
@@ -73,7 +72,7 @@ import kotlinx.coroutines.CoroutineScope
  *         SetQuantityActionId
  *     )
  *
- *     override fun initialise(globalModel: OrderInitModel) {
+ *     override fun initialize(globalModel: OrderInitModel) {
  *         emitState {
  *             QuantityState(
  *                 quantity = globalModel.defaultQuantity,
@@ -118,7 +117,7 @@ import kotlinx.coroutines.CoroutineScope
  * ## Lifecycle
  * 1. Store is created by [StoreFactory]
  * 2. [reset] is called (for subscriptions)
- * 3. [initialise] is called with init data
+ * 3. [initialize] is called with init data
  * 4. [receive] is called for each matching action
  * 5. [clear] is called on dispose
  *
@@ -127,7 +126,7 @@ import kotlinx.coroutines.CoroutineScope
  * @see UIState
  * @see StoreAction
  */
-public abstract class Store<UISTATE: UIState, INITMODEL: StoreInitObj, STOREMODEL: StoreInitObj> {
+public abstract class Store<UISTATE: UIState, INITMODEL: StoreInitObj> {
 
     /** Internal mutable state flow. Use [updateState] or [emitState] syntax extensions instead. */
     internal val mutableUiStateFlow: MutableStateFlow<UISTATE?> = MutableStateFlow(value = null)
@@ -136,11 +135,11 @@ public abstract class Store<UISTATE: UIState, INITMODEL: StoreInitObj, STOREMODE
     internal val uiStateFlow: StateFlow<UISTATE?> = mutableUiStateFlow.asStateFlow()
 
     /** Flow for UI-layer actions (navigation, toasts, etc.) */
-    internal val mutableUiSideEffects: MutableSharedFlow<UIComposerActionHolder> = MutableSharedFlow()
+    internal val mutableUiSideEffects: MutableSharedFlow<UIComposerActionHolder> = MutableSharedFlow(extraBufferCapacity = 1)
     internal val uiSideEffects = mutableUiSideEffects.asSharedFlow()
 
     /** Flow for DataComposer-layer actions */
-    internal val mutableComposerSideEffects: MutableSharedFlow<DataComposerActionHolder> = MutableSharedFlow()
+    internal val mutableComposerSideEffects: MutableSharedFlow<DataComposerActionHolder> = MutableSharedFlow(extraBufferCapacity = 1)
     internal val composerSideEffects = mutableComposerSideEffects.asSharedFlow()
 
     /**
@@ -185,7 +184,7 @@ public abstract class Store<UISTATE: UIState, INITMODEL: StoreInitObj, STOREMODE
      *
      * @param globalModel The initialization data passed from ViewModel
      */
-    public abstract fun initialise(globalModel: INITMODEL)
+    public abstract fun initialize(globalModel: INITMODEL)
 
     /**
      * Handle an incoming [StoreAction].
@@ -220,10 +219,10 @@ public abstract class Store<UISTATE: UIState, INITMODEL: StoreInitObj, STOREMODE
      * - Removing listeners
      * - Releasing references
      */
-    public open fun clear() {}
+    public open fun onStoreDisposed() {}
 
     /**
-     * Called after Store creation but before [initialise].
+     * Called after Store creation but before [initialize].
      *
      * Override to set up subscriptions or listeners that should persist
      * across state re-initializations. This is called once per Store instance.
@@ -233,5 +232,5 @@ public abstract class Store<UISTATE: UIState, INITMODEL: StoreInitObj, STOREMODE
      * - Setting up form field listeners
      * - Registering broadcast receivers
      */
-    public open fun reset() {}
+    public open fun onStoreReady() {}
 }

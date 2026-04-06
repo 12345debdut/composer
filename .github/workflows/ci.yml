@@ -23,13 +23,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build all modules
-        run: ./gradlew :composer:build :composer-compose:build :composer-bom:build :app:build
+        run: ./gradlew :composer:build :composer-compose:build :composer-fragment:build :composer-bom:build :app:build
 
       - name: Run unit tests
         run: ./gradlew :composer:test :composer-compose:test
 
       - name: Check binary API compatibility
-        run: ./gradlew :composer:apiCheck :composer-compose:apiCheck
+        run: ./gradlew :composer:apiCheck :composer-compose:apiCheck :composer-fragment:apiCheck
 
       - name: Upload test results
         if: always()

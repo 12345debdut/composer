@@ -13,6 +13,7 @@ dependencies {
     constraints {
         api("io.github.debdutsaha:composer:$versionName")
         api("io.github.debdutsaha:composer-compose:$versionName")
+        api("io.github.debdutsaha:composer-fragment:$versionName")
     }
 }
 

@@ -16,7 +16,7 @@ import com.debdut.composer.store.StoreInitObj
  * Fragments implement UIComposer (or its variants) and provide the container:
  *
  * ```kotlin
- * class MyFragment : Fragment(), ListUIComposer<MyState, MyInitModel, MyWidgetModel> {
+ * class MyFragment : Fragment(), ListUIComposer<MyState, MyInitModel> {
  *
  *     private val viewModel: MyViewModel by viewModels()
  *
@@ -60,6 +60,6 @@ import com.debdut.composer.store.StoreInitObj
  * @see SingleUIComposer
  * @see UIComposerSyntax
  */
-public interface UIComposer<UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj>: Composer {
-    public val container: DataComposerHost<UISTATE, INITDATA, STOREMODEL>
+public interface UIComposer<UISTATE: UIState, INITDATA: StoreInitObj>: Composer {
+    public val container: DataComposerHost<UISTATE, INITDATA>
 }

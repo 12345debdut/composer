@@ -2,6 +2,7 @@ package com.debdut.composer.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.debdut.composer.ExperimentalComposerApi
 import com.debdut.composer.composer.data.DataComposerActionHandler
 import com.debdut.composer.composer.data.ListWithHeaderAndFooterDataComposer
 import com.debdut.composer.composer.data.host.ListWithHeaderAndFooterDataComposerHost
@@ -29,8 +30,7 @@ import com.debdut.composer.store.factory.StoreFactory
  *     private val repository: OrderRepository
  * ) : ListWithHeaderAndFooterDataComposerViewModel<
  *     OrderPadState,
- *     OrderPadInitModel,
- *     OrderWidgetModel
+ *     OrderPadInitModel
  * >(storeFactory), DataComposerActionHandler {
  *
  *     override val dataComposerActionHandler: DataComposerActionHandler = this
@@ -101,16 +101,15 @@ import com.debdut.composer.store.factory.StoreFactory
  *
  * @param UISTATE The base UI state type for all widgets
  * @param INITDATA The initialization data type
- * @param STOREMODEL The widget model type
  * @param storeFactory Factory that creates Store instances
  *
  * @see ListDataComposerViewModel
  * @see ListWithHeaderAndFooterDataComposerHost
  * @see ListUIComposerWithHeaderAndFooterFragment
  */
-public abstract class ListWithHeaderAndFooterDataComposerViewModel<UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj>(
-    storeFactory: StoreFactory<UISTATE, INITDATA, STOREMODEL>
-) : ViewModel(), ListWithHeaderAndFooterDataComposerHost<UISTATE, INITDATA,STOREMODEL> {
+public abstract class ListWithHeaderAndFooterDataComposerViewModel<UISTATE: UIState, INITDATA: StoreInitObj>(
+    storeFactory: StoreFactory<UISTATE, INITDATA>
+) : ViewModel(), ListWithHeaderAndFooterDataComposerHost<UISTATE, INITDATA> {
 
     /**
      * Handler for [DataComposerAction]s dispatched by Stores.
@@ -127,11 +126,17 @@ public abstract class ListWithHeaderAndFooterDataComposerViewModel<UISTATE: UISt
      * - `headerState`: States with [HeaderUIStateType]
      * - `footerState`: States with [FooterUIStateType]
      */
-    public override val container: ListWithHeaderAndFooterDataComposer<UISTATE, INITDATA,STOREMODEL> by lazy {
+    @OptIn(ExperimentalComposerApi::class)
+    public override val container: ListWithHeaderAndFooterDataComposer<UISTATE, INITDATA> by lazy {
         listWithHeaderAndFooterDataComposer(
             storeFactory = storeFactory,
             coroutineScope = viewModelScope,
             dataComposerActionHandler = dataComposerActionHandler
         )
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        container.dispose()
     }
 }

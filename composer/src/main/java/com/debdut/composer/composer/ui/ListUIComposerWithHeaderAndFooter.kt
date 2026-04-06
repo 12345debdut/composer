@@ -13,8 +13,7 @@ import com.debdut.composer.store.StoreInitObj
  * ## Usage
  * ```kotlin
  * class OrderPadFragment : ListUIComposerWithHeaderAndFooterFragment<
- *     OrderPadState, OrderPadInitModel, OrderWidgetModel
- * >(R.layout.fragment_order_pad) {
+ *     OrderPadState, OrderPadInitModel * >(R.layout.fragment_order_pad) {
  *
  *     private val viewModel: OrderPadViewModel by viewModels()
  *
@@ -52,6 +51,6 @@ import com.debdut.composer.store.StoreInitObj
  * @see ListUIComposerWithHeaderAndFooterFragment
  * @see ListWithHeaderAndFooterDataComposerHost
  */
-public interface ListUIComposerWithHeaderAndFooter<UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj>: UIComposer<UISTATE, INITDATA, STOREMODEL> {
-    public override val container: ListWithHeaderAndFooterDataComposerHost<UISTATE, INITDATA,STOREMODEL>
+public interface ListUIComposerWithHeaderAndFooter<UISTATE: UIState, INITDATA: StoreInitObj>: UIComposer<UISTATE, INITDATA> {
+    public override val container: ListWithHeaderAndFooterDataComposerHost<UISTATE, INITDATA>
 }

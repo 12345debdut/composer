@@ -21,6 +21,7 @@ import com.debdut.composer.store.StoreId
 import com.debdut.composer.store.StoreInitObj
 import com.debdut.composer.store.factory.StoreFactory
 import com.debdut.composer.store.syntax.send
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -78,11 +79,12 @@ import java.util.concurrent.ConcurrentHashMap
  * @see ListWithHeaderFooterDataComposerImpl
  * @see SingleDataComposerImpl
  */
-internal open class ListDataComposerImpl<UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL: StoreInitObj> internal constructor(
-    private val storeFactory: StoreFactory<UISTATE, INITDATA, STOREMODEL>,
+internal open class ListDataComposerImpl<UISTATE : UIState, INITDATA : StoreInitObj> internal constructor(
+    private val storeFactory: StoreFactory<UISTATE, INITDATA>,
     private val coroutineScope: CoroutineScope,
-    private val dataComposerActionHandler: DataComposerActionHandler
-) : ListDataComposer<UISTATE, INITDATA, STOREMODEL> {
+    private val dataComposerActionHandler: DataComposerActionHandler,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+) : ListDataComposer<UISTATE, INITDATA> {
 
     protected val _uiStateFlow = MutableStateFlow<List<UISTATE>>(emptyList())
     override val uiStateFlow: StateFlow<List<UISTATE>> = _uiStateFlow.asStateFlow()
@@ -94,7 +96,7 @@ internal open class ListDataComposerImpl<UISTATE : UIState, INITDATA : StoreInit
                 dataComposerActionHandler.receiveAllActions(it.action)
             }.shareIn(coroutineScope, started = SharingStarted.WhileSubscribed())
 
-    private val stores: MutableMap<StoreId, MutableList<Store<UISTATE, INITDATA, STOREMODEL>>> = mutableMapOf()
+    private val stores: MutableMap<StoreId, MutableList<Store<UISTATE, INITDATA>>> = mutableMapOf()
 
     private val widgetIdToStoreId: ConcurrentHashMap<WidgetId, StoreId> = ConcurrentHashMap()
 
@@ -109,9 +111,10 @@ internal open class ListDataComposerImpl<UISTATE : UIState, INITDATA : StoreInit
 
     private val storeMutex = Mutex()
 
-    override suspend fun initialiseWithWidgets(widgets: List<WidgetId>, initObj: INITDATA) {
+    override suspend fun initializeWithWidgets(widgets: List<WidgetId>, initObj: INITDATA) {
+        require(widgets.isNotEmpty()) { "widgets must not be empty" }
         reloadWithWidgetsInternal(widgets) {
-            initialise(initObj)
+            initialize(initObj)
         }
     }
 
@@ -124,30 +127,30 @@ internal open class ListDataComposerImpl<UISTATE : UIState, INITDATA : StoreInit
                     stores[storeId]?.toList().orEmpty()
                 }
                 if (stores.isEmpty()) return@forEach
-                stores.forEach { it.initialise(initobj) }
+                stores.forEach { it.initialize(initobj) }
             }
         }
     }
 
-    override fun initialiseWithInitModel(initObj: INITDATA) {
+    override fun initializeWithInitModel(initObj: INITDATA) {
         coroutineScope.launch {
             safeStoresFlatten().forEach {
-                it.initialise(initObj)
+                it.initialize(initObj)
             }
         }
     }
 
     private suspend fun reloadWithWidgetsInternal(
         widgets: List<WidgetId>,
-        updateCallBack: Store<UISTATE, INITDATA, STOREMODEL>.() -> Unit
+        updateCallBack: Store<UISTATE, INITDATA>.() -> Unit
     ) = storeMutex.withLock {
         groupInfoMap.clear()
         stores.forEach {
             for(store in it.value) {
-                store.clear()
+                store.onStoreDisposed()
             }
         }
-        val newStores = mutableListOf<IntermediateWidgetStoreModel<UISTATE, INITDATA, STOREMODEL>>()
+        val newStores = mutableListOf<IntermediateWidgetStoreModel<UISTATE, INITDATA>>()
         val newStoreToWidgetId = ConcurrentHashMap<WidgetId, StoreId>()
         widgets.forEach { widgetId ->
             when (widgetId) {
@@ -204,9 +207,9 @@ internal open class ListDataComposerImpl<UISTATE : UIState, INITDATA : StoreInit
         combineGlobalSideEffects(newStores)
     }
 
-    private fun callResetFunctionForAllStores(newStores: List<IntermediateWidgetStoreModel<UISTATE, INITDATA, STOREMODEL>>) {
+    private fun callResetFunctionForAllStores(newStores: List<IntermediateWidgetStoreModel<UISTATE, INITDATA>>) {
         for (newStore in newStores) {
-            newStore.store?.reset()
+            newStore.store?.onStoreReady()
         }
     }
 
@@ -220,11 +223,11 @@ internal open class ListDataComposerImpl<UISTATE : UIState, INITDATA : StoreInit
         }
     }
 
-    private suspend fun safeStoresFlatten(): List<Store<UISTATE, INITDATA, STOREMODEL>> = storeMutex.withLock {
+    private suspend fun safeStoresFlatten(): List<Store<UISTATE, INITDATA>> = storeMutex.withLock {
         stores.values.flatten().toList()
     }
 
-    private suspend fun safeGetStoresForId(storeId: StoreId): List<Store<UISTATE, INITDATA, STOREMODEL>> = storeMutex.withLock {
+    private suspend fun safeGetStoresForId(storeId: StoreId): List<Store<UISTATE, INITDATA>> = storeMutex.withLock {
         stores[storeId]?.toList().orEmpty()
     }
 
@@ -264,8 +267,8 @@ internal open class ListDataComposerImpl<UISTATE : UIState, INITDATA : StoreInit
     }
 
     override suspend fun suspendBatchDispatchToWidget(storeActionWidgetIdPairList: List<StoreActionWidgetIdPair>) {
-        withContext(Dispatchers.Default) {
-            val localCopyStores: Map<StoreId, List<Store<UISTATE, INITDATA, STOREMODEL>>> = storeMutex.withLock {
+        withContext(dispatcher) {
+            val localCopyStores: Map<StoreId, List<Store<UISTATE, INITDATA>>> = storeMutex.withLock {
                 stores.mapValues { (_, list) -> list.toList() }
             }
             if (localCopyStores.isEmpty()) return@withContext
@@ -288,10 +291,11 @@ internal open class ListDataComposerImpl<UISTATE : UIState, INITDATA : StoreInit
     override fun dispose() {
         disposables.forEach { it.cancel() }
         disposables.clear()
-        stores.values.flatten().forEach { it.clear() }
+        stores.values.flatten().forEach { it.onStoreDisposed() }
         stores.clear()
         widgetIdToStoreId.clear()
         groupInfoMap.clear()
+        _uiStateFlow.value = emptyList()
     }
 
     override fun dispatchToStore(action: StoreAction, storeId: StoreId) {
@@ -306,7 +310,7 @@ internal open class ListDataComposerImpl<UISTATE : UIState, INITDATA : StoreInit
         }
     }
 
-    private suspend fun internalDispatchToStores(stores: List<Store<UISTATE, INITDATA, STOREMODEL>>, action: StoreAction) = coroutineScope {
+    private suspend fun internalDispatchToStores(stores: List<Store<UISTATE, INITDATA>>, action: StoreAction) = coroutineScope {
         if (stores.isEmpty()) return@coroutineScope
         stores.map { store -> async { store.send(action) } }.awaitAll()
     }
@@ -315,7 +319,7 @@ internal open class ListDataComposerImpl<UISTATE : UIState, INITDATA : StoreInit
         _uiStateFlow.update { list }
     }
 
-    private fun combineStates(stores: List<IntermediateWidgetStoreModel<UISTATE, INITDATA, STOREMODEL>>) {
+    private fun combineStates(stores: List<IntermediateWidgetStoreModel<UISTATE, INITDATA>>) {
         disposables.add(coroutineScope.launch {
             val stateFlows: List<StateFlow<UIState?>> = buildList {
                 stores.forEach { (widgetId, store) ->
@@ -391,7 +395,7 @@ internal open class ListDataComposerImpl<UISTATE : UIState, INITDATA : StoreInit
         }
     }
 
-    private fun combineUISideEffects(list: List<IntermediateWidgetStoreModel<UISTATE, INITDATA, STOREMODEL>>) {
+    private fun combineUISideEffects(list: List<IntermediateWidgetStoreModel<UISTATE, INITDATA>>) {
         disposables.add(coroutineScope.collectActionHolder(
                 list.mapNotNull { it.store },
                 { uiSideEffects },
@@ -399,7 +403,7 @@ internal open class ListDataComposerImpl<UISTATE : UIState, INITDATA : StoreInit
             ))
     }
 
-    private fun combineGlobalSideEffects(list: List<IntermediateWidgetStoreModel<UISTATE, INITDATA, STOREMODEL>>) {
+    private fun combineGlobalSideEffects(list: List<IntermediateWidgetStoreModel<UISTATE, INITDATA>>) {
         disposables.add(
             coroutineScope.collectActionHolder(
                 list.mapNotNull { it.store },

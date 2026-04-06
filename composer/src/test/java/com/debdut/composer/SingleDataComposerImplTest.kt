@@ -59,11 +59,11 @@ class SingleDataComposerImplTest {
         override val actionId: ActionId = IncrementActionId
     ) : StoreAction
 
-    class SingleTestStore : Store<TestState, TestInitObj, TestInitObj>() {
+    class SingleTestStore : Store<TestState, TestInitObj>() {
         override val storeId: StoreId = TestStoreId
         override val subscribedStoreAction: Set<ActionId> = setOf(IncrementActionId)
 
-        override fun initialise(globalModel: TestInitObj) {
+        override fun initialize(globalModel: TestInitObj) {
             emitState { TestState(widgetId = TestWidgetId, value = 0) }
         }
 
@@ -74,8 +74,8 @@ class SingleDataComposerImplTest {
         }
     }
 
-    class TestStoreFactory : StoreFactory<TestState, TestInitObj, TestInitObj> {
-        override fun get(widgetId: WidgetId): Store<TestState, TestInitObj, TestInitObj> {
+    class TestStoreFactory : StoreFactory<TestState, TestInitObj> {
+        override fun get(widgetId: WidgetId): Store<TestState, TestInitObj> {
             return SingleTestStore()
         }
     }
@@ -86,11 +86,11 @@ class SingleDataComposerImplTest {
     }
 
     @Test
-    fun `initialise creates single store and emits state`() = runTest {
+    fun `initialize creates single store and emits state`() = runTest {
         val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
         val composer = singleDataComposer(TestStoreFactory(), scope, NoOpActionHandler())
 
-        composer.initialiseWithWidgets(listOf(TestWidgetId), TestInitObj)
+        composer.initializeWithWidgets(listOf(TestWidgetId), TestInitObj)
         advanceUntilIdle()
 
         val states = composer.uiStateFlow.value
@@ -106,7 +106,7 @@ class SingleDataComposerImplTest {
         val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
         val composer = singleDataComposer(TestStoreFactory(), scope, NoOpActionHandler())
 
-        composer.initialiseWithWidgets(listOf(TestWidgetId), TestInitObj)
+        composer.initializeWithWidgets(listOf(TestWidgetId), TestInitObj)
         advanceUntilIdle()
 
         composer.suspendDispatch(IncrementAction())
@@ -124,7 +124,7 @@ class SingleDataComposerImplTest {
         val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
         val composer = singleDataComposer(TestStoreFactory(), scope, NoOpActionHandler())
 
-        composer.initialiseWithWidgets(listOf(TestWidgetId), TestInitObj)
+        composer.initializeWithWidgets(listOf(TestWidgetId), TestInitObj)
         advanceUntilIdle()
 
         composer.dispose()
@@ -137,7 +137,7 @@ class SingleDataComposerImplTest {
         val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
         val composer = singleDataComposer(TestStoreFactory(), scope, NoOpActionHandler())
 
-        composer.initialiseWithWidgets(listOf(TestWidgetId), TestInitObj)
+        composer.initializeWithWidgets(listOf(TestWidgetId), TestInitObj)
         advanceUntilIdle()
 
         val ids = composer.currentWidgetIds()
@@ -153,7 +153,7 @@ class SingleDataComposerImplTest {
         val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
         val composer = singleDataComposer(TestStoreFactory(), scope, NoOpActionHandler())
 
-        composer.initialiseWithWidgets(listOf(TestWidgetId), TestInitObj)
+        composer.initializeWithWidgets(listOf(TestWidgetId), TestInitObj)
         advanceUntilIdle()
 
         repeat(5) {

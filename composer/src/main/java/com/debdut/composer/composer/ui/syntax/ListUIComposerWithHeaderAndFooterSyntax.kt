@@ -50,7 +50,7 @@ import kotlinx.coroutines.launch
  * @param lifecycleState Minimum lifecycle state for observation (default: STARTED)
  * @param observer Callback invoked with header states on each update
  */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj> ListUIComposerWithHeaderAndFooter<UISTATE, INITDATA,STOREMODEL>.observeHeaderState(
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> ListUIComposerWithHeaderAndFooter<UISTATE, INITDATA>.observeHeaderState(
     lifecycleOwner: LifecycleOwner,
     lifecycleState: Lifecycle.State = Lifecycle.State.STARTED,
     observer: List<UISTATE>.() -> Unit
@@ -71,7 +71,7 @@ public fun <UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj> L
  * @param lifecycleState Minimum lifecycle state for observation (default: STARTED)
  * @param observer Callback invoked with footer states on each update
  */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> ListUIComposerWithHeaderAndFooter<UISTATE, INITDATA,STOREMODEL>.observeFooterState(
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> ListUIComposerWithHeaderAndFooter<UISTATE, INITDATA>.observeFooterState(
     lifecycleOwner: LifecycleOwner,
     lifecycleState: Lifecycle.State = Lifecycle.State.STARTED,
     observer: List<UISTATE>.() -> Unit

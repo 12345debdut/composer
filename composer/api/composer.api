@@ -1,3 +1,6 @@
+public abstract interface annotation class com/debdut/composer/ExperimentalComposerApi : java/lang/annotation/Annotation {
+}
+
 public abstract interface class com/debdut/composer/action/Action {
 	public abstract fun getActionId ()Lcom/debdut/composer/action/ActionId;
 }
@@ -77,8 +80,8 @@ public abstract interface class com/debdut/composer/composer/data/DataComposer :
 	public abstract fun dispose ()V
 	public abstract fun getUiActionHolder ()Lkotlinx/coroutines/flow/SharedFlow;
 	public abstract fun getUiStateFlow ()Lkotlinx/coroutines/flow/StateFlow;
-	public abstract fun initialiseWithInitModel (Lcom/debdut/composer/store/StoreInitObj;)V
-	public abstract fun initialiseWithWidgets (Ljava/util/List;Lcom/debdut/composer/store/StoreInitObj;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun initializeWithInitModel (Lcom/debdut/composer/store/StoreInitObj;)V
+	public abstract fun initializeWithWidgets (Ljava/util/List;Lcom/debdut/composer/store/StoreInitObj;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun suspendBatchDispatchToWidget (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun suspendDispatch (Lcom/debdut/composer/action/Action;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun suspendDispatchToStore (Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/store/StoreId;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -218,9 +221,12 @@ public final class com/debdut/composer/composer/ui/syntax/UIComposerSyntaxKt {
 }
 
 public final class com/debdut/composer/extensions/HostExtensionsKt {
-	public static final fun listDataComposer (Lcom/debdut/composer/store/factory/StoreFactory;Lkotlinx/coroutines/CoroutineScope;Lcom/debdut/composer/composer/data/DataComposerActionHandler;)Lcom/debdut/composer/composer/data/ListDataComposer;
-	public static final fun listWithHeaderAndFooterDataComposer (Lcom/debdut/composer/store/factory/StoreFactory;Lkotlinx/coroutines/CoroutineScope;Lcom/debdut/composer/composer/data/DataComposerActionHandler;)Lcom/debdut/composer/composer/data/ListWithHeaderAndFooterDataComposer;
-	public static final fun singleDataComposer (Lcom/debdut/composer/store/factory/StoreFactory;Lkotlinx/coroutines/CoroutineScope;Lcom/debdut/composer/composer/data/DataComposerActionHandler;)Lcom/debdut/composer/composer/data/SingleDataComposer;
+	public static final fun listDataComposer (Lcom/debdut/composer/store/factory/StoreFactory;Lkotlinx/coroutines/CoroutineScope;Lcom/debdut/composer/composer/data/DataComposerActionHandler;Lkotlinx/coroutines/CoroutineDispatcher;)Lcom/debdut/composer/composer/data/ListDataComposer;
+	public static synthetic fun listDataComposer$default (Lcom/debdut/composer/store/factory/StoreFactory;Lkotlinx/coroutines/CoroutineScope;Lcom/debdut/composer/composer/data/DataComposerActionHandler;Lkotlinx/coroutines/CoroutineDispatcher;ILjava/lang/Object;)Lcom/debdut/composer/composer/data/ListDataComposer;
+	public static final fun listWithHeaderAndFooterDataComposer (Lcom/debdut/composer/store/factory/StoreFactory;Lkotlinx/coroutines/CoroutineScope;Lcom/debdut/composer/composer/data/DataComposerActionHandler;Lkotlinx/coroutines/CoroutineDispatcher;)Lcom/debdut/composer/composer/data/ListWithHeaderAndFooterDataComposer;
+	public static synthetic fun listWithHeaderAndFooterDataComposer$default (Lcom/debdut/composer/store/factory/StoreFactory;Lkotlinx/coroutines/CoroutineScope;Lcom/debdut/composer/composer/data/DataComposerActionHandler;Lkotlinx/coroutines/CoroutineDispatcher;ILjava/lang/Object;)Lcom/debdut/composer/composer/data/ListWithHeaderAndFooterDataComposer;
+	public static final fun singleDataComposer (Lcom/debdut/composer/store/factory/StoreFactory;Lkotlinx/coroutines/CoroutineScope;Lcom/debdut/composer/composer/data/DataComposerActionHandler;Lkotlinx/coroutines/CoroutineDispatcher;)Lcom/debdut/composer/composer/data/SingleDataComposer;
+	public static synthetic fun singleDataComposer$default (Lcom/debdut/composer/store/factory/StoreFactory;Lkotlinx/coroutines/CoroutineScope;Lcom/debdut/composer/composer/data/DataComposerActionHandler;Lkotlinx/coroutines/CoroutineDispatcher;ILjava/lang/Object;)Lcom/debdut/composer/composer/data/SingleDataComposer;
 }
 
 public abstract interface class com/debdut/composer/state/FooterUIStateType : com/debdut/composer/state/UIStateType {
@@ -263,13 +269,13 @@ public abstract interface class com/debdut/composer/state/UIStateType {
 
 public abstract class com/debdut/composer/store/Store {
 	public fun <init> ()V
-	public fun clear ()V
 	public abstract fun getStoreId ()Lcom/debdut/composer/store/StoreId;
 	public abstract fun getSubscribedStoreAction ()Ljava/util/Set;
-	public abstract fun initialise (Lcom/debdut/composer/store/StoreInitObj;)V
+	public abstract fun initialize (Lcom/debdut/composer/store/StoreInitObj;)V
 	public fun invokeOnStateUpdate (Lcom/debdut/composer/state/UIState;Lcom/debdut/composer/state/UIState;)V
+	public fun onStoreDisposed ()V
+	public fun onStoreReady ()V
 	public abstract fun receive (Lcom/debdut/composer/action/StoreAction;Lcom/debdut/composer/store/StoreId;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun reset ()V
 }
 
 public abstract interface class com/debdut/composer/store/StoreId {
@@ -282,10 +288,6 @@ public final class com/debdut/composer/store/StoreId$Companion {
 }
 
 public abstract interface class com/debdut/composer/store/StoreInitObj {
-}
-
-public abstract interface class com/debdut/composer/store/StoreWidgetModel {
-	public abstract fun getWidgetId ()Ljava/lang/String;
 }
 
 public abstract interface class com/debdut/composer/store/factory/StoreFactory {
@@ -303,26 +305,12 @@ public final class com/debdut/composer/store/syntax/StoreSyntaxKt {
 	public static final fun updateState (Lcom/debdut/composer/store/Store;Lkotlin/jvm/functions/Function1;)Lcom/debdut/composer/state/UIState;
 }
 
-public abstract class com/debdut/composer/uicomponents/ListUIComposerFragment : androidx/fragment/app/Fragment, com/debdut/composer/composer/ui/ListUIComposer {
-	public fun <init> (I)V
-	public abstract fun handleUIAction (Lcom/debdut/composer/action/holder/UIComposerActionHolder;)V
-	public fun onViewCreated (Landroid/view/View;Landroid/os/Bundle;)V
-	public abstract fun render (Ljava/util/List;)V
-}
-
-public abstract class com/debdut/composer/uicomponents/ListUIComposerWithHeaderAndFooterFragment : com/debdut/composer/uicomponents/ListUIComposerFragment, com/debdut/composer/composer/ui/ListUIComposerWithHeaderAndFooter {
-	public fun <init> (I)V
-	public abstract fun getContainer ()Lcom/debdut/composer/composer/data/host/ListWithHeaderAndFooterDataComposerHost;
-	public fun onViewCreated (Landroid/view/View;Landroid/os/Bundle;)V
-	public abstract fun renderFooter (Ljava/util/List;)V
-	public abstract fun renderHeader (Ljava/util/List;)V
-}
-
 public abstract class com/debdut/composer/viewmodel/ListDataComposerViewModel : androidx/lifecycle/ViewModel, com/debdut/composer/composer/data/host/ListDataComposerHost {
 	public fun <init> (Lcom/debdut/composer/store/factory/StoreFactory;)V
 	public synthetic fun getContainer ()Lcom/debdut/composer/composer/data/DataComposer;
 	public fun getContainer ()Lcom/debdut/composer/composer/data/ListDataComposer;
 	public abstract fun getDataComposerActionHandler ()Lcom/debdut/composer/composer/data/DataComposerActionHandler;
+	protected fun onCleared ()V
 }
 
 public abstract class com/debdut/composer/viewmodel/ListWithHeaderAndFooterDataComposerViewModel : androidx/lifecycle/ViewModel, com/debdut/composer/composer/data/host/ListWithHeaderAndFooterDataComposerHost {
@@ -331,5 +319,6 @@ public abstract class com/debdut/composer/viewmodel/ListWithHeaderAndFooterDataC
 	public synthetic fun getContainer ()Lcom/debdut/composer/composer/data/ListDataComposer;
 	public fun getContainer ()Lcom/debdut/composer/composer/data/ListWithHeaderAndFooterDataComposer;
 	protected abstract fun getDataComposerActionHandler ()Lcom/debdut/composer/composer/data/DataComposerActionHandler;
+	protected fun onCleared ()V
 }
 

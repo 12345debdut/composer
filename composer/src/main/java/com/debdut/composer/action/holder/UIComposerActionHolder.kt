@@ -2,7 +2,6 @@ package com.debdut.composer.action.holder
 
 import com.debdut.composer.action.UIComposerAction
 import com.debdut.composer.store.StoreId
-import com.debdut.composer.uicomponents.ListUIComposerFragment
 
 /**
  * ActionHolder implementation for [UIComposerAction]s.
@@ -54,15 +53,14 @@ import com.debdut.composer.uicomponents.ListUIComposerFragment
  * ```
  *
  * ## Automatic Observation
- * When using [ListUIComposerFragment] or its variants, UI actions are
- * automatically observed and delivered to `handleUIAction()`.
+ * When using ListUIComposerFragment (from composer-fragment module) or its variants,
+ * UI actions are automatically observed and delivered to `handleUIAction()`.
  *
  * @property action The [UIComposerAction] being transported
  * @property storeId The ID of the Store that dispatched this action
  *
  * @see ActionHolder
  * @see UIComposerAction
- * @see ListUIComposerFragment.handleUIAction
  */
 public data class UIComposerActionHolder(
     override val action: UIComposerAction,

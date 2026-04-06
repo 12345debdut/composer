@@ -29,6 +29,6 @@ import com.debdut.composer.store.StoreInitObj
  * @see SingleDataComposer
  * @see SingleDataComposerHostSyntax
  */
-public interface SingleDataComposerHost<UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj>: DataComposerHost<UISTATE, INITDATA, STOREMODEL> {
-    public override val container: SingleDataComposer<UISTATE, INITDATA, STOREMODEL>
+public interface SingleDataComposerHost<UISTATE: UIState, INITDATA: StoreInitObj>: DataComposerHost<UISTATE, INITDATA> {
+    public override val container: SingleDataComposer<UISTATE, INITDATA>
 }

@@ -14,18 +14,17 @@ Stores are the core business units that manage state for individual widgets. Eac
 - Can dispatch side effects to parent layers
 - Is easily testable in isolation
 
-A Store is parameterized by three types:
+A Store is parameterized by two types:
 
 | Type param | Purpose |
 |------------|---------|
 | `S : UIState` | The state this Store emits |
 | `I : StoreInitObj` | Initialization data passed during setup |
-| `W : StoreWidgetModel` | Widget metadata (e.g. widgetId) |
 
 Key methods:
 
 ```kotlin
-override fun initialise(globalModel: I)         // set up initial state
+override fun initialize(globalModel: I)         // set up initial state
 override suspend fun receive(action: StoreAction, storeId: StoreId)  // handle actions
 ```
 
@@ -107,8 +106,8 @@ object CounterWidgetId : WidgetId {
 A `StoreFactory` creates and provides Store instances for each widget:
 
 ```kotlin
-class CounterStoreFactory : StoreFactory<CounterState, InitModel, WidgetModel> {
-    override fun get(widgetId: WidgetId): Store<CounterState, InitModel, WidgetModel> {
+class CounterStoreFactory : StoreFactory<CounterState, InitModel> {
+    override fun get(widgetId: WidgetId): Store<CounterState, InitModel> {
         return when (widgetId) {
             CounterWidgetId -> CounterStore()
             else -> throw IllegalArgumentException("Unknown widget: $widgetId")

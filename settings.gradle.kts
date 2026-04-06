@@ -23,5 +23,6 @@ rootProject.name = "composer-library"
 include(":app")
 include(":composer")
 include(":composer-compose")
+include(":composer-fragment")
 include(":composer-bom")
  

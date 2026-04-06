@@ -16,14 +16,12 @@
 -keep interface com.debdut.composer.composer.ui.NoStoreWidgetId { *; }
 -keep interface com.debdut.composer.store.StoreId { *; }
 -keep interface com.debdut.composer.store.StoreInitObj { *; }
--keep interface com.debdut.composer.store.StoreWidgetModel { *; }
 -keep interface com.debdut.composer.composer.data.DataComposerActionHandler { *; }
 
 # Keep abstract classes consumers extend
 -keep class com.debdut.composer.store.Store { *; }
 -keep class com.debdut.composer.store.factory.StoreFactory { *; }
 -keep class com.debdut.composer.viewmodel.** { *; }
--keep class com.debdut.composer.uicomponents.** { *; }
 
 # Keep action holders (used in callbacks)
 -keep class com.debdut.composer.action.holder.** { *; }

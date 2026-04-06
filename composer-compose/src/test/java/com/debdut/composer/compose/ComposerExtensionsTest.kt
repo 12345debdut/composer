@@ -28,11 +28,11 @@ class ComposerExtensionsTest {
     @Test
     fun `uiStateFlow returns StateFlow from container`() {
         val stateFlow = MutableStateFlow<List<TestState>>(emptyList())
-        val mockComposer = mockk<DataComposer<TestState, TestInitObj, TestInitObj>> {
+        val mockComposer = mockk<DataComposer<TestState, TestInitObj>> {
             every { uiStateFlow } returns stateFlow
             every { uiActionHolder } returns MutableSharedFlow()
         }
-        val mockHost = mockk<DataComposerHost<TestState, TestInitObj, TestInitObj>> {
+        val mockHost = mockk<DataComposerHost<TestState, TestInitObj>> {
             every { container } returns mockComposer
         }
 
@@ -42,11 +42,11 @@ class ComposerExtensionsTest {
     @Test
     fun `uiActionFlow returns SharedFlow from container`() {
         val actionFlow = MutableSharedFlow<UIComposerActionHolder>()
-        val mockComposer = mockk<DataComposer<TestState, TestInitObj, TestInitObj>> {
+        val mockComposer = mockk<DataComposer<TestState, TestInitObj>> {
             every { uiStateFlow } returns MutableStateFlow(emptyList())
             every { uiActionHolder } returns actionFlow
         }
-        val mockHost = mockk<DataComposerHost<TestState, TestInitObj, TestInitObj>> {
+        val mockHost = mockk<DataComposerHost<TestState, TestInitObj>> {
             every { container } returns mockComposer
         }
 
@@ -56,11 +56,11 @@ class ComposerExtensionsTest {
     @Test
     fun `uiStateFlow reflects state emissions from container`() {
         val stateFlow = MutableStateFlow<List<TestState>>(emptyList())
-        val mockComposer = mockk<DataComposer<TestState, TestInitObj, TestInitObj>> {
+        val mockComposer = mockk<DataComposer<TestState, TestInitObj>> {
             every { uiStateFlow } returns stateFlow
             every { uiActionHolder } returns MutableSharedFlow()
         }
-        val mockHost = mockk<DataComposerHost<TestState, TestInitObj, TestInitObj>> {
+        val mockHost = mockk<DataComposerHost<TestState, TestInitObj>> {
             every { container } returns mockComposer
         }
 

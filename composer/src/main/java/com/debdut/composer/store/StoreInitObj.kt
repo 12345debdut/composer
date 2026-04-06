@@ -1,7 +1,7 @@
 package com.debdut.composer.store
 
 /**
- * Marker interface for initialization data passed to [Store.initialise].
+ * Marker interface for initialization data passed to [Store.initialize].
  *
  * StoreInitObj represents the data needed to set up a Store's initial state.
  * This typically includes configuration, default values, and context-specific
@@ -37,7 +37,7 @@ package com.debdut.composer.store
  * init(widgets = widgetList, initData = initModel)
  *
  * // In Store
- * override fun initialise(globalModel: OrderPadInitModel) {
+ * override fun initialize(globalModel: OrderPadInitModel) {
  *     emitState {
  *         QuantityState(
  *             quantity = globalModel.defaultQuantity,
@@ -54,7 +54,6 @@ package com.debdut.composer.store
  * - Consider using lazy evaluation for expensive computations
  * - Each Store extracts only the data it needs from the global model
  *
- * @see Store.initialise
- * @see StoreWidgetModel
+ * @see Store.initialize
  */
 public interface StoreInitObj

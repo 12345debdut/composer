@@ -17,6 +17,7 @@ import com.debdut.composer.store.StoreInitObj
 import com.debdut.composer.store.factory.StoreFactory
 import com.debdut.composer.store.syntax.send
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -30,6 +31,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /**
@@ -56,11 +59,12 @@ import kotlinx.coroutines.withContext
  * @see SingleDataComposer
  * @see ListDataComposerImpl
  */
-internal class SingleDataComposerImpl<UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL : StoreInitObj>(
+internal class SingleDataComposerImpl<UISTATE : UIState, INITDATA : StoreInitObj>(
     private val coroutineScope: CoroutineScope,
-    private val storeFactory: StoreFactory<UISTATE, INITDATA, STOREMODEL>,
-    private val dataComposerActionHandler: DataComposerActionHandler
-) : SingleDataComposer<UISTATE, INITDATA, STOREMODEL> {
+    private val storeFactory: StoreFactory<UISTATE, INITDATA>,
+    private val dataComposerActionHandler: DataComposerActionHandler,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+) : SingleDataComposer<UISTATE, INITDATA> {
     private val _uiStateFlow: MutableStateFlow<List<UISTATE>> = MutableStateFlow(emptyList())
     override val uiStateFlow: StateFlow<List<UISTATE>> = _uiStateFlow.asStateFlow()
 
@@ -68,11 +72,12 @@ internal class SingleDataComposerImpl<UISTATE : UIState, INITDATA : StoreInitObj
     override val uiActionHolder: SharedFlow<UIComposerActionHolder> =
         _uiComposerActionHolder.asSharedFlow()
 
-    private var store: Store<UISTATE, INITDATA, STOREMODEL>? = null
+    private var store: Store<UISTATE, INITDATA>? = null
 
     private var widgetId: WidgetId? = null
 
     private val disposables = mutableListOf<Job>()
+    private val storeMutex = Mutex()
 
     override suspend fun suspendDispatch(action: Action) {
         when (action) {
@@ -101,7 +106,7 @@ internal class SingleDataComposerImpl<UISTATE : UIState, INITDATA : StoreInitObj
     }
 
     override suspend fun suspendBatchDispatchToWidget(storeActionWidgetIdPairList: List<StoreActionWidgetIdPair>) {
-        withContext(Dispatchers.Default) {
+        withContext(dispatcher) {
             storeActionWidgetIdPairList
                 .filter { data ->
                     data.widgetId == this@SingleDataComposerImpl.widgetId
@@ -143,33 +148,33 @@ internal class SingleDataComposerImpl<UISTATE : UIState, INITDATA : StoreInitObj
         }
     }
 
-    override suspend fun initialiseWithWidgets(
+    override suspend fun initializeWithWidgets(
         widgets: List<WidgetId>,
         initObj: INITDATA
     ) {
+        require(widgets.isNotEmpty()) { "widgets must not be empty" }
         reloadWithTemplatesInternal(widgets) {
-            initialise(initObj)
+            initialize(initObj)
         }
     }
 
     override suspend fun updateWidgets(widgets: List<WidgetId>, initobj: INITDATA) {
         val widgetId = widgets.firstOrNull() ?: return
         if (widgetId != this.widgetId) return
-        store?.initialise(globalModel = initobj)
+        store?.initialize(globalModel = initobj)
     }
 
-    override fun initialiseWithInitModel(initObj: INITDATA) {
-        store?.initialise(initObj)
+    override fun initializeWithInitModel(initObj: INITDATA) {
+        store?.initialize(initObj)
     }
-    private fun reloadWithTemplatesInternal(
+    private suspend fun reloadWithTemplatesInternal(
         widgets: List<WidgetId>,
-        updateCallBack: Store<UISTATE, INITDATA, STOREMODEL>.() -> Unit
-    ) {
-        val widgetId = widgets.firstOrNull() ?: return
+        updateCallBack: Store<UISTATE, INITDATA>.() -> Unit
+    ) = storeMutex.withLock {
+        val widgetId = widgets.firstOrNull() ?: return@withLock
         this.widgetId = widgetId
         val store = storeFactory.get(widgetId).apply {
             updateCoroutineScope(this@SingleDataComposerImpl.coroutineScope)
-
         }
         disposables.forEach { it.cancel() }
         disposables.clear()
@@ -180,7 +185,7 @@ internal class SingleDataComposerImpl<UISTATE : UIState, INITDATA : StoreInitObj
         combineComposerSideEffects(store)
     }
 
-    private fun combineStates(store: Store<UISTATE, INITDATA, STOREMODEL>) {
+    private fun combineStates(store: Store<UISTATE, INITDATA>) {
         disposables.add(coroutineScope.launch {
             store.uiStateFlow.filterNotNull().collect { uiState ->
                 _uiStateFlow.update {
@@ -190,7 +195,7 @@ internal class SingleDataComposerImpl<UISTATE : UIState, INITDATA : StoreInitObj
         })
     }
 
-    private fun combineUISideEffects(store: Store<UISTATE, INITDATA, STOREMODEL>) {
+    private fun combineUISideEffects(store: Store<UISTATE, INITDATA>) {
         disposables.add(
             coroutineScope.launch {
                 store.uiSideEffects.collect {
@@ -200,7 +205,7 @@ internal class SingleDataComposerImpl<UISTATE : UIState, INITDATA : StoreInitObj
         )
     }
 
-    private fun combineComposerSideEffects(store: Store<UISTATE, INITDATA, STOREMODEL>) {
+    private fun combineComposerSideEffects(store: Store<UISTATE, INITDATA>) {
         disposables.add(
             coroutineScope.launch {
                 store.composerSideEffects.collect {

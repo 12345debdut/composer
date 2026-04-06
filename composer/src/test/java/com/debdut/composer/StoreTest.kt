@@ -76,7 +76,7 @@ class StoreTest {
         }
     }
 
-    class TestStore : Store<TestState, TestInitObj, TestInitObj>() {
+    class TestStore : Store<TestState, TestInitObj>() {
         override val storeId: StoreId = TestStoreId
         override val subscribedStoreAction: Set<ActionId> = setOf(IncrementActionId, DecrementActionId)
 
@@ -84,7 +84,7 @@ class StoreTest {
         var lastReceivedAction: StoreAction? = null
         var invokeOnStateUpdateCallCount = 0
 
-        override fun initialise(globalModel: TestInitObj) {
+        override fun initialize(globalModel: TestInitObj) {
             emitState { TestState(count = 0, label = "initialized") }
         }
 
@@ -113,13 +113,13 @@ class StoreTest {
     }
 
     @Test
-    fun `initial state is null before initialise`() {
+    fun `initial state is null before initialize`() {
         assertNull(store.currentState)
     }
 
     @Test
     fun `emitState sets initial state`() {
-        store.initialise(TestInitObj)
+        store.initialize(TestInitObj)
         val state = store.currentState
         assertNotNull(state)
         assertEquals(0, state!!.count)
@@ -128,7 +128,7 @@ class StoreTest {
 
     @Test
     fun `updateState transforms existing state`() {
-        store.initialise(TestInitObj)
+        store.initialize(TestInitObj)
         store.updateState { copy(count = 42) }
         assertEquals(42, store.currentState!!.count)
     }
@@ -141,7 +141,7 @@ class StoreTest {
 
     @Test
     fun `updateState preserves unmodified fields`() {
-        store.initialise(TestInitObj)
+        store.initialize(TestInitObj)
         store.updateState { copy(count = 5) }
         assertEquals("initialized", store.currentState!!.label)
         assertEquals(5, store.currentState!!.count)
@@ -149,7 +149,7 @@ class StoreTest {
 
     @Test
     fun `invokeOnStateUpdate called after updateState`() {
-        store.initialise(TestInitObj)
+        store.initialize(TestInitObj)
         assertEquals(0, store.invokeOnStateUpdateCallCount)
         store.updateState { copy(count = 1) }
         assertEquals(1, store.invokeOnStateUpdateCallCount)
@@ -157,7 +157,7 @@ class StoreTest {
 
     @Test
     fun `receive processes subscribed action`() = testScope.runTest {
-        store.initialise(TestInitObj)
+        store.initialize(TestInitObj)
         store.receive(IncrementAction(amount = 5), StoreId.Empty)
         assertEquals(5, store.currentState!!.count)
         assertEquals(1, store.receiveCallCount)
@@ -165,7 +165,7 @@ class StoreTest {
 
     @Test
     fun `receive handles multiple sequential actions`() = testScope.runTest {
-        store.initialise(TestInitObj)
+        store.initialize(TestInitObj)
         store.receive(IncrementAction(amount = 3), StoreId.Empty)
         store.receive(IncrementAction(amount = 2), StoreId.Empty)
         store.receive(DecrementAction(), StoreId.Empty)
@@ -178,7 +178,7 @@ class StoreTest {
         store.uiStateFlow.test {
             assertNull(awaitItem()) // initial null
 
-            store.initialise(TestInitObj)
+            store.initialize(TestInitObj)
             val initialized = awaitItem()
             assertNotNull(initialized)
             assertEquals(0, initialized!!.count)
@@ -197,7 +197,7 @@ class StoreTest {
 
     @Test
     fun `side effects flow emits UIComposerActionHolder`() = testScope.runTest {
-        store.initialise(TestInitObj)
+        store.initialize(TestInitObj)
         store.uiSideEffects.test {
             store.suspendDispatch(TestUIAction("hello"))
             val holder = awaitItem()

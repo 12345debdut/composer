@@ -7,7 +7,9 @@ import com.debdut.composer.state.HeaderUIStateType
 import com.debdut.composer.state.UIState
 import com.debdut.composer.store.StoreInitObj
 import com.debdut.composer.store.factory.StoreFactory
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -56,13 +58,14 @@ import kotlinx.coroutines.flow.update
  * @see HeaderUIStateType
  * @see FooterUIStateType
  */
-internal class ListWithHeaderFooterDataComposerImpl<UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> internal constructor(
-    storeFactory: StoreFactory<UISTATE, INITDATA, STOREMODEL>,
+internal class ListWithHeaderFooterDataComposerImpl<UISTATE: UIState, INITDATA: StoreInitObj> internal constructor(
+    storeFactory: StoreFactory<UISTATE, INITDATA>,
     coroutineScope: CoroutineScope,
-    dataComposerActionHandler: DataComposerActionHandler
+    dataComposerActionHandler: DataComposerActionHandler,
+    dispatcher: CoroutineDispatcher = Dispatchers.Default
 ):
-    ListWithHeaderAndFooterDataComposer<UISTATE, INITDATA, STOREMODEL>,
-    ListDataComposerImpl<UISTATE, INITDATA, STOREMODEL>(storeFactory = storeFactory, coroutineScope = coroutineScope, dataComposerActionHandler = dataComposerActionHandler) {
+    ListWithHeaderAndFooterDataComposer<UISTATE, INITDATA>,
+    ListDataComposerImpl<UISTATE, INITDATA>(storeFactory = storeFactory, coroutineScope = coroutineScope, dataComposerActionHandler = dataComposerActionHandler, dispatcher = dispatcher) {
 
     /** Separate state flow for header widgets. */
     private val _headerState = MutableStateFlow<List<UISTATE>>(value = emptyList())
@@ -80,6 +83,12 @@ internal class ListWithHeaderFooterDataComposerImpl<UISTATE: UIState, INITDATA: 
      *
      * @param list The combined visible states from all stores
      */
+    override fun dispose() {
+        super.dispose()
+        _headerState.value = emptyList()
+        _footerState.value = emptyList()
+    }
+
     override fun updateList(list: List<UISTATE>) {
         val headerList = mutableListOf<UISTATE>()
         val footerList = mutableListOf<UISTATE>()

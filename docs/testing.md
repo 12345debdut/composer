@@ -29,7 +29,7 @@ class CounterStoreTest {
     @Test
     fun `increment action increases count`() = runTest {
         val store = CounterStore()
-        store.initialise(InitModel())
+        store.initialize(InitModel())
 
         store.receive(IncrementAction(amount = 5), CounterStoreId)
 
@@ -39,7 +39,7 @@ class CounterStoreTest {
     @Test
     fun `decrement action decreases count`() = runTest {
         val store = CounterStore()
-        store.initialise(InitModel())
+        store.initialize(InitModel())
         store.receive(IncrementAction(amount = 10), CounterStoreId)
 
         store.receive(DecrementAction(amount = 3), CounterStoreId)
@@ -50,7 +50,7 @@ class CounterStoreTest {
     @Test
     fun `decrement does not go below zero`() = runTest {
         val store = CounterStore()
-        store.initialise(InitModel())
+        store.initialize(InitModel())
 
         store.receive(DecrementAction(amount = 5), CounterStoreId)
 
@@ -71,7 +71,7 @@ import kotlinx.coroutines.test.runTest
 fun `state flow emits updates`() = runTest {
     val store = CounterStore()
     store.stateFlow.test {
-        store.initialise(InitModel())
+        store.initialize(InitModel())
         val initial = awaitItem()
         assertEquals(0, initial.count)
 

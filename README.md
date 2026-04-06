@@ -30,7 +30,7 @@ dependencies {
 }
 ```
 
-Published to **Maven Central** -- no extra repository config needed.
+Published to **Maven Central** -- no extra repository config needed. Composer is a **Kotlin-only** library; Java is not officially supported.
 
 ## Minimal example
 
@@ -44,11 +44,11 @@ data class CounterState(
 ) : UIState
 
 // 2. Store
-class CounterStore : Store<CounterState, InitModel, WidgetModel>() {
+class CounterStore : Store<CounterState, InitModel>() {
     override val storeId = CounterStoreId
     override val subscribedStoreAction = setOf(IncrementActionId)
 
-    override fun initialise(globalModel: InitModel) {
+    override fun initialize(globalModel: InitModel) {
         emitState { CounterState() }
     }
 
@@ -85,7 +85,8 @@ fun CounterScreen(vm: CounterViewModel) {
 |----------|---------|
 | `io.github.debdutsaha:composer` | Core -- Stores, Actions, Composers, State |
 | `io.github.debdutsaha:composer-compose` | Jetpack Compose extensions |
-| `io.github.debdutsaha:composer-bom` | BOM -- version alignment for both |
+| `io.github.debdutsaha:composer-fragment` | Fragment base classes for View-based UI |
+| `io.github.debdutsaha:composer-bom` | BOM -- version alignment for all |
 
 ## Contributing
 

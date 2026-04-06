@@ -61,7 +61,7 @@ import kotlinx.coroutines.launch
  *
  * Called from UI components (Fragments) to trigger state changes.
  */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj> UIComposer<UISTATE, INITDATA,STOREMODEL>.dispatch(
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> UIComposer<UISTATE, INITDATA>.dispatch(
     action: StoreAction
 ): Unit = container.dispatch(action = action)
 
@@ -71,7 +71,7 @@ public fun <UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj> U
  * @param action The action to dispatch
  * @param storeId The target store's ID
  */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj> UIComposer<UISTATE, INITDATA,STOREMODEL>.dispatch(
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> UIComposer<UISTATE, INITDATA>.dispatch(
     action: StoreAction,
     storeId: StoreId
 ): Unit = container.dispatch(action = action, storeId = storeId)
@@ -81,7 +81,7 @@ public fun <UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj> U
  *
  * Bypasses stores and goes directly to [DataComposerActionHandler.receiveAction].
  */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj> UIComposer<UISTATE, INITDATA,STOREMODEL>.dispatch(
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> UIComposer<UISTATE, INITDATA>.dispatch(
     action: DataComposerAction,
 ): Unit = container.dispatch(action = action)
 
@@ -95,7 +95,7 @@ public fun <UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj> U
  * @param lifecycleState Minimum lifecycle state for observation (default: STARTED)
  * @param observer Callback invoked with the state list on each update
  */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj> UIComposer<UISTATE, INITDATA,STOREMODEL>.observeAsState(
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> UIComposer<UISTATE, INITDATA>.observeAsState(
     lifecycleOwner: LifecycleOwner,
     lifecycleState: Lifecycle.State = Lifecycle.State.STARTED,
     observer: List<UISTATE>.() -> Unit
@@ -116,7 +116,7 @@ public fun <UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj> U
  * @param lifecycleState Minimum lifecycle state for observation (default: STARTED)
  * @param observer Callback invoked for each UI action holder
  */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj> UIComposer<UISTATE, INITDATA,STOREMODEL>.observeAction(
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> UIComposer<UISTATE, INITDATA>.observeAction(
     lifecycleOwner: LifecycleOwner,
     lifecycleState: Lifecycle.State = Lifecycle.State.STARTED,
     observer: UIComposerActionHolder.() -> Unit

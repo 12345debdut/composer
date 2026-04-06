@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
  * - Forwarding side effects to the UI layer
  *
  * ## Key Responsibilities
- * 1. **Store Lifecycle**: Creates stores when [initialiseWithWidgets] is called
+ * 1. **Store Lifecycle**: Creates stores when [initializeWithWidgets] is called
  * 2. **State Combination**: Merges individual Store states into [uiStateFlow]
  * 3. **Action Routing**: Dispatches actions to matching Stores
  * 4. **Side Effect Forwarding**: Bubbles up UI actions via [uiActionHolder]
@@ -37,11 +37,11 @@ import kotlinx.coroutines.flow.StateFlow
  * 1. ViewModel.init(widgets, initData)
  *         │
  *         ▼
- * 2. DataComposer.initialiseWithWidgets(widgets, initData)
+ * 2. DataComposer.initializeWithWidgets(widgets, initData)
  *         │
  *         ├── Creates Store for each WidgetId via StoreFactory
  *         ├── Calls Store.reset() for each Store
- *         ├── Calls Store.initialise(initData) for each Store
+ *         ├── Calls Store.initialize(initData) for each Store
  *         └── Combines Store states into uiStateFlow
  *         │
  *         ▼
@@ -69,14 +69,13 @@ import kotlinx.coroutines.flow.StateFlow
  *
  * @param UISTATE The base UI state type for all widgets
  * @param INITOBJ The initialization data type
- * @param STOREMODEL The widget model type
  *
  * @see SingleDataComposer
  * @see ListDataComposer
  * @see ListWithHeaderAndFooterDataComposer
  * @see Store
  */
-public interface DataComposer<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODEL: StoreInitObj>: Composer {
+public interface DataComposer<UISTATE: UIState, INITOBJ: StoreInitObj>: Composer {
 
     /** Combined state flow from all managed Stores. Emits list of visible widget states. */
     public val uiStateFlow: StateFlow<List<UISTATE>>
@@ -87,12 +86,12 @@ public interface DataComposer<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODE
     /**
      * Initialize the composer with a list of widgets.
      *
-     * Creates Store instances for each widget, calls reset() and initialise() on each.
+     * Creates Store instances for each widget, calls reset() and initialize() on each.
      *
      * @param widgets List of widget IDs to create stores for
      * @param initObj Initialization data passed to each Store
      */
-    public suspend fun initialiseWithWidgets(widgets: List<WidgetId>, initObj: INITOBJ)
+    public suspend fun initializeWithWidgets(widgets: List<WidgetId>, initObj: INITOBJ)
 
     /**
      * Update existing widgets with new init data.
@@ -107,9 +106,9 @@ public interface DataComposer<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODE
     /**
      * Re-initialize all existing Stores with new init data.
      *
-     * Does not create new stores, only calls initialise() on existing ones.
+     * Does not create new stores, only calls initialize() on existing ones.
      */
-    public fun initialiseWithInitModel(initObj: INITOBJ)
+    public fun initializeWithInitModel(initObj: INITOBJ)
 
     /** Dispatch action to all subscribed Stores (suspending). */
     public suspend fun suspendDispatch(action: Action)

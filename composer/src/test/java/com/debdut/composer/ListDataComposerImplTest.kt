@@ -68,11 +68,11 @@ class ListDataComposerImplTest {
         override val actionId: ActionId = UpdateActionId
     ) : StoreAction
 
-    class TestStore1 : Store<TestState, TestInitObj, TestInitObj>() {
+    class TestStore1 : Store<TestState, TestInitObj>() {
         override val storeId: StoreId = Store1Id
         override val subscribedStoreAction: Set<ActionId> = setOf(UpdateActionId)
 
-        override fun initialise(globalModel: TestInitObj) {
+        override fun initialize(globalModel: TestInitObj) {
             emitState { TestState(widgetId = Widget1Id, value = "store1-init") }
         }
 
@@ -83,11 +83,11 @@ class ListDataComposerImplTest {
         }
     }
 
-    class TestStore2 : Store<TestState, TestInitObj, TestInitObj>() {
+    class TestStore2 : Store<TestState, TestInitObj>() {
         override val storeId: StoreId = Store2Id
         override val subscribedStoreAction: Set<ActionId> = setOf(UpdateActionId)
 
-        override fun initialise(globalModel: TestInitObj) {
+        override fun initialize(globalModel: TestInitObj) {
             emitState { TestState(widgetId = Widget2Id, value = "store2-init") }
         }
 
@@ -98,10 +98,10 @@ class ListDataComposerImplTest {
         }
     }
 
-    class TestStoreFactory : StoreFactory<TestState, TestInitObj, TestInitObj> {
-        val createdStores = mutableListOf<Store<TestState, TestInitObj, TestInitObj>>()
+    class TestStoreFactory : StoreFactory<TestState, TestInitObj> {
+        val createdStores = mutableListOf<Store<TestState, TestInitObj>>()
 
-        override fun get(widgetId: WidgetId): Store<TestState, TestInitObj, TestInitObj> {
+        override fun get(widgetId: WidgetId): Store<TestState, TestInitObj> {
             val store = when (widgetId) {
                 Widget1Id -> TestStore1()
                 Widget2Id -> TestStore2()
@@ -126,13 +126,13 @@ class ListDataComposerImplTest {
     }
 
     @Test
-    fun `initialiseWithWidgets creates stores and emits initial state`() = runTest {
+    fun `initializeWithWidgets creates stores and emits initial state`() = runTest {
         val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
         val storeFactory = TestStoreFactory()
         val actionHandler = TestActionHandler()
         val composer = listDataComposer(storeFactory, scope, actionHandler)
 
-        composer.initialiseWithWidgets(listOf(Widget1Id, Widget2Id), TestInitObj)
+        composer.initializeWithWidgets(listOf(Widget1Id, Widget2Id), TestInitObj)
         advanceUntilIdle()
 
         val states = composer.uiStateFlow.value
@@ -151,7 +151,7 @@ class ListDataComposerImplTest {
         val actionHandler = TestActionHandler()
         val composer = listDataComposer(storeFactory, scope, actionHandler)
 
-        composer.initialiseWithWidgets(listOf(Widget1Id, Widget2Id), TestInitObj)
+        composer.initializeWithWidgets(listOf(Widget1Id, Widget2Id), TestInitObj)
         advanceUntilIdle()
 
         composer.suspendDispatch(UpdateAction("updated"))
@@ -172,7 +172,7 @@ class ListDataComposerImplTest {
         val actionHandler = TestActionHandler()
         val composer = listDataComposer(storeFactory, scope, actionHandler)
 
-        composer.initialiseWithWidgets(listOf(Widget1Id), TestInitObj)
+        composer.initializeWithWidgets(listOf(Widget1Id), TestInitObj)
         advanceUntilIdle()
 
         composer.dispose()
@@ -187,7 +187,7 @@ class ListDataComposerImplTest {
         val actionHandler = TestActionHandler()
         val composer = listDataComposer(storeFactory, scope, actionHandler)
 
-        composer.initialiseWithWidgets(listOf(Widget1Id, Widget2Id), TestInitObj)
+        composer.initializeWithWidgets(listOf(Widget1Id, Widget2Id), TestInitObj)
         advanceUntilIdle()
 
         val ids = composer.currentWidgetIds()
@@ -206,7 +206,7 @@ class ListDataComposerImplTest {
         val actionHandler = TestActionHandler()
         val composer = listDataComposer(storeFactory, scope, actionHandler)
 
-        composer.initialiseWithWidgets(listOf(Widget1Id), TestInitObj)
+        composer.initializeWithWidgets(listOf(Widget1Id), TestInitObj)
         advanceUntilIdle()
 
         val action = UpdateAction("test")
@@ -226,7 +226,7 @@ class ListDataComposerImplTest {
         val actionHandler = TestActionHandler()
         val composer = listDataComposer(storeFactory, scope, actionHandler)
 
-        composer.initialiseWithWidgets(listOf(Widget1Id, Widget2Id), TestInitObj)
+        composer.initializeWithWidgets(listOf(Widget1Id, Widget2Id), TestInitObj)
         advanceUntilIdle()
 
         val store1 = storeFactory.createdStores[0]
@@ -248,7 +248,7 @@ class ListDataComposerImplTest {
         val actionHandler = TestActionHandler()
         val composer = listDataComposer(storeFactory, scope, actionHandler)
 
-        composer.initialiseWithWidgets(listOf(Widget1Id, Widget2Id), TestInitObj)
+        composer.initializeWithWidgets(listOf(Widget1Id, Widget2Id), TestInitObj)
         advanceUntilIdle()
 
         assertEquals(2, storeFactory.createdStores.size)

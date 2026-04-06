@@ -28,7 +28,7 @@ import com.debdut.composer.store.StoreInitObj
  * @property widgetId The widget identifier
  * @property store The Store instance, or null for static widgets
  */
-internal data class IntermediateWidgetStoreModel<UISTATE: UIState, INITMODEL: StoreInitObj, STOREMODEL: StoreInitObj>(
+internal data class IntermediateWidgetStoreModel<UISTATE: UIState, INITMODEL: StoreInitObj>(
     val widgetId: WidgetId,
-    val store: Store<UISTATE, INITMODEL, STOREMODEL>?
+    val store: Store<UISTATE, INITMODEL>?
 )

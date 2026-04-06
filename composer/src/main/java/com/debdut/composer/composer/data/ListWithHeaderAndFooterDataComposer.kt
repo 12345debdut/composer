@@ -72,7 +72,7 @@ import kotlinx.coroutines.flow.StateFlow
  * @see FooterUIStateType
  * @see ListWithHeaderAndFooterDataComposerHost
  */
-public interface ListWithHeaderAndFooterDataComposer<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODEL: StoreInitObj>: ListDataComposer<UISTATE, INITOBJ, STOREMODEL> {
+public interface ListWithHeaderAndFooterDataComposer<UISTATE: UIState, INITOBJ: StoreInitObj>: ListDataComposer<UISTATE, INITOBJ> {
 
     /** State flow for header widgets (states with [HeaderUIStateType]). */
     public val headerState: StateFlow<List<UISTATE>>

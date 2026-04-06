@@ -68,44 +68,44 @@ import kotlinx.coroutines.launch
 /**
  * Dispatch an action to all subscribed stores (non-suspending).
  */
-public fun <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.dispatch(
+public fun <UISTATE : UIState, INITDATA : StoreInitObj> DataComposerHost<UISTATE, INITDATA>.dispatch(
     action: Action
 ): Unit = container.dispatch(action)
 
 /** Dispatch an action to all subscribed stores (suspending). */
-public suspend fun <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.suspendDispatch(
+public suspend fun <UISTATE : UIState, INITDATA : StoreInitObj> DataComposerHost<UISTATE, INITDATA>.suspendDispatch(
     action: Action
 ): Unit = container.suspendDispatch(action)
 
 /** Get the list of currently active widget IDs. */
-public val <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.currentWidgetIds: List<WidgetId>
+public val <UISTATE: UIState, INITDATA: StoreInitObj> DataComposerHost<UISTATE, INITDATA>.currentWidgetIds: List<WidgetId>
     get() = container.currentWidgetIds()
 
 /** Dispatch action to a specific store by ID (suspending). */
-public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.suspendDispatch(
+public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj> DataComposerHost<UISTATE, INITDATA>.suspendDispatch(
     action: StoreAction,
     storeId: StoreId
 ): Unit = container.suspendDispatchToStore(action, storeId)
 
 /** Dispatch action to a widget's store by widget ID (suspending). */
-public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.suspendDispatch(
+public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj> DataComposerHost<UISTATE, INITDATA>.suspendDispatch(
     action: StoreAction,
     widgetId: WidgetId
 ): Unit = container.suspendDispatchToWidget(action, widgetId)
 
 /** Batch dispatch multiple actions to their respective widgets (suspending). */
-public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.suspendBatchDispatch(
+public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj> DataComposerHost<UISTATE, INITDATA>.suspendBatchDispatch(
     storeActionWidgetIdPairList: List<StoreActionWidgetIdPair>
 ): Unit = container.suspendBatchDispatchToWidget(storeActionWidgetIdPairList)
 
 /** Dispatch action to a specific store by ID (non-suspending). */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.dispatch(
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> DataComposerHost<UISTATE, INITDATA>.dispatch(
     action: StoreAction,
     storeId: StoreId
 ): Unit = container.dispatchToStore(action, storeId)
 
 /** Dispatch action to a widget's store by widget ID (non-suspending). */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.dispatch(
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> DataComposerHost<UISTATE, INITDATA>.dispatch(
     action: StoreAction,
     widgetId: WidgetId
 ): Unit = container.dispatchToWidget(action, widgetId)
@@ -113,15 +113,15 @@ public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> 
 /**
  * Initialize the DataComposer with a widget list.
  *
- * Creates stores for each widget and calls initialise() on each.
+ * Creates stores for each widget and calls initialize() on each.
  *
  * @param widgets List of widget IDs defining the screen structure
  * @param initData Initialization data passed to each store
  */
-public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.init(
+public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj> DataComposerHost<UISTATE, INITDATA>.init(
     widgets: List<WidgetId>,
     initData: INITDATA
-): Unit = container.initialiseWithWidgets(widgets, initData)
+): Unit = container.initializeWithWidgets(widgets, initData)
 
 /**
  * Update existing widgets with new initialization data.
@@ -129,17 +129,17 @@ public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreI
  * @param widgets List of widget IDs to update
  * @param initData New initialization data
  */
-public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.updateWidget(
+public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj> DataComposerHost<UISTATE, INITDATA>.updateWidget(
     widgets: List<WidgetId>,
     initData: INITDATA
 ): Unit = container.updateWidgets(widgets = widgets, initobj = initData)
 
 /** Access the combined UI state flow from all stores. */
-public val <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.uiState: StateFlow<List<UISTATE>>
+public val <UISTATE: UIState, INITDATA: StoreInitObj> DataComposerHost<UISTATE, INITDATA>.uiState: StateFlow<List<UISTATE>>
     get() = container.uiStateFlow
 
 /** Access the UI action holder flow for side effects. */
-public val <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.uiActionHolder: SharedFlow<UIComposerActionHolder>
+public val <UISTATE: UIState, INITDATA: StoreInitObj> DataComposerHost<UISTATE, INITDATA>.uiActionHolder: SharedFlow<UIComposerActionHolder>
     get() = container.uiActionHolder
 
 /**
@@ -148,7 +148,7 @@ public val <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> 
  * @param coroutineScope The scope to launch the observation in
  * @param observer Callback invoked with the state list on each update
  */
-public fun <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.observeAsState(
+public fun <UISTATE : UIState, INITDATA : StoreInitObj> DataComposerHost<UISTATE, INITDATA>.observeAsState(
     coroutineScope: CoroutineScope,
     observer: List<UISTATE>.() -> Unit
 ) {
@@ -163,7 +163,7 @@ public fun <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL: StoreInitObj
  * @param coroutineScope The scope to launch the observation in
  * @param observer Callback invoked for each UI action
  */
-public fun <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL: StoreInitObj> DataComposerHost<UISTATE, INITDATA, STOREMODEL>.observeActions(
+public fun <UISTATE : UIState, INITDATA : StoreInitObj> DataComposerHost<UISTATE, INITDATA>.observeActions(
     coroutineScope: CoroutineScope,
     observer: UIComposerActionHolder.() -> Unit
 ) {

@@ -12,9 +12,9 @@ import com.debdut.composer.store.StoreInitObj
  *
  * ## Usage
  * ```kotlin
- * class OrderFragment : ListUIComposerFragment<OrderState, OrderInitModel, OrderWidgetModel>(
+ * class OrderFragment : ListUIComposerFragment<OrderState, OrderInitModel>(
  *     R.layout.fragment_order
- * ), ListUIComposer<OrderState, OrderInitModel, OrderWidgetModel> {
+ * ), ListUIComposer<OrderState, OrderInitModel> {
  *
  *     private val viewModel: OrderViewModel by viewModels()
  *
@@ -37,6 +37,6 @@ import com.debdut.composer.store.StoreInitObj
  * @see ListUIComposerFragment
  * @see ListDataComposerHost
  */
-public interface ListUIComposer<UISTATE: UIState, INITDATA: StoreInitObj,STOREMODEL: StoreInitObj>: UIComposer<UISTATE, INITDATA, STOREMODEL> {
-    public override val container: ListDataComposerHost<UISTATE, INITDATA, STOREMODEL>
+public interface ListUIComposer<UISTATE: UIState, INITDATA: StoreInitObj>: UIComposer<UISTATE, INITDATA> {
+    public override val container: ListDataComposerHost<UISTATE, INITDATA>
 }

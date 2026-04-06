@@ -8,7 +8,7 @@ import com.debdut.composer.composer.data.syntax.init
 import com.debdut.composer.viewmodel.ListDataComposerViewModel
 import kotlinx.coroutines.launch
 
-class CounterViewModel : ListDataComposerViewModel<CounterState, CounterInitObj, CounterInitObj>(
+class CounterViewModel : ListDataComposerViewModel<CounterState, CounterInitObj>(
     storeFactory = CounterStoreFactory()
 ) {
 

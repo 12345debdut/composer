@@ -2,16 +2,22 @@ package com.debdut.composer.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.debdut.composer.action.holder.UIComposerActionHolder
 import com.debdut.composer.composer.data.host.DataComposerHost
 import com.debdut.composer.state.UIState
 import com.debdut.composer.store.StoreInitObj
 
 /**
- * Collect UI side effects from a DataComposerHost in a Compose-safe way.
+ * Collect UI side effects from a DataComposerHost in a lifecycle-aware, Compose-safe way.
  *
  * This composable launches a coroutine that collects [UIComposerActionHolder]s
- * from the host's action flow. Use this for one-shot UI effects like:
+ * from the host's action flow. Collection is lifecycle-aware — it pauses when
+ * the lifecycle drops below [Lifecycle.State.STARTED] and resumes automatically.
+ *
+ * Use this for one-shot UI effects like:
  * - Showing toasts/snackbars
  * - Navigation events
  * - Showing dialogs
@@ -41,13 +47,16 @@ import com.debdut.composer.store.StoreInitObj
  * @param onAction Callback invoked for each UI action
  */
 @Composable
-public fun <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL : StoreInitObj> CollectSideEffect(
-    host: DataComposerHost<UISTATE, INITDATA, STOREMODEL>,
+public fun <UISTATE : UIState, INITDATA : StoreInitObj> CollectSideEffect(
+    host: DataComposerHost<UISTATE, INITDATA>,
     onAction: suspend (UIComposerActionHolder) -> Unit
 ) {
-    LaunchedEffect(host) {
-        host.container.uiActionHolder.collect { holder ->
-            onAction(holder)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(host, lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            host.container.uiActionHolder.collect { holder ->
+                onAction(holder)
+            }
         }
     }
 }

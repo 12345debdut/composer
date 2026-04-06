@@ -47,6 +47,7 @@ dependencies {
     // Composer library
     implementation(project(":composer"))
     implementation(project(":composer-compose"))
+    implementation(project(":composer-fragment"))
 
     // Jetpack Compose
     implementation(platform(libs.compose.bom))

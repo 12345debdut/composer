@@ -55,6 +55,6 @@ import com.debdut.composer.store.StoreInitObj
  * @see ListWithHeaderAndFooterDataComposerHost
  * @see DataComposerHostSyntax
  */
-public interface DataComposerHost<UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> {
-    public val container: DataComposer<UISTATE, INITDATA,STOREMODEL>
+public interface DataComposerHost<UISTATE: UIState, INITDATA: StoreInitObj> {
+    public val container: DataComposer<UISTATE, INITDATA>
 }

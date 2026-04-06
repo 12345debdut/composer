@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
  * @param coroutineScope The scope to launch the observation in
  * @param observer Callback invoked with header states on each update
  */
-public fun <UISTATE : UIState, INITDATA : StoreInitObj,STOREMODEL: StoreInitObj> ListWithHeaderAndFooterDataComposerHost<UISTATE, INITDATA, STOREMODEL>.observeHeaderState(
+public fun <UISTATE : UIState, INITDATA : StoreInitObj> ListWithHeaderAndFooterDataComposerHost<UISTATE, INITDATA>.observeHeaderState(
     coroutineScope: CoroutineScope,
     observer: List<UISTATE>.() -> Unit
 ) {
@@ -62,7 +62,7 @@ public fun <UISTATE : UIState, INITDATA : StoreInitObj,STOREMODEL: StoreInitObj>
  * @param coroutineScope The scope to launch the observation in
  * @param observer Callback invoked with footer states on each update
  */
-public fun <UISTATE : UIState, INITDATA : StoreInitObj,STOREMODEL: StoreInitObj> ListWithHeaderAndFooterDataComposerHost<UISTATE, INITDATA,STOREMODEL>.observeFooterState(
+public fun <UISTATE : UIState, INITDATA : StoreInitObj> ListWithHeaderAndFooterDataComposerHost<UISTATE, INITDATA>.observeFooterState(
     coroutineScope: CoroutineScope,
     observer: List<UISTATE>.() -> Unit
 ) {
@@ -72,9 +72,9 @@ public fun <UISTATE : UIState, INITDATA : StoreInitObj,STOREMODEL: StoreInitObj>
 }
 
 /** Access the header state flow (states with [HeaderUIStateType]). */
-public val <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL: StoreInitObj> ListWithHeaderAndFooterDataComposerHost<UISTATE, INITDATA, STOREMODEL>.headerState: StateFlow<List<UISTATE>>
+public val <UISTATE : UIState, INITDATA : StoreInitObj> ListWithHeaderAndFooterDataComposerHost<UISTATE, INITDATA>.headerState: StateFlow<List<UISTATE>>
     get() = container.headerState
 
 /** Access the footer state flow (states with [FooterUIStateType]). */
-public val <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL: StoreInitObj> ListWithHeaderAndFooterDataComposerHost<UISTATE, INITDATA, STOREMODEL>.footerState: StateFlow<List<UISTATE>>
+public val <UISTATE : UIState, INITDATA : StoreInitObj> ListWithHeaderAndFooterDataComposerHost<UISTATE, INITDATA>.footerState: StateFlow<List<UISTATE>>
     get() = container.footerState

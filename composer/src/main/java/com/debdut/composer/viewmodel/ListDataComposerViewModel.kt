@@ -2,6 +2,7 @@ package com.debdut.composer.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.debdut.composer.ExperimentalComposerApi
 import com.debdut.composer.composer.data.DataComposerActionHandler
 import com.debdut.composer.composer.data.ListDataComposer
 import com.debdut.composer.composer.data.host.ListDataComposerHost
@@ -23,7 +24,7 @@ import com.debdut.composer.store.factory.StoreFactory
  * class OrderViewModel @Inject constructor(
  *     storeFactory: OrderStoreFactory,
  *     private val repository: OrderRepository
- * ) : ListDataComposerViewModel<OrderState, OrderInitModel, OrderWidgetModel>(
+ * ) : ListDataComposerViewModel<OrderState, OrderInitModel>(
  *     storeFactory = storeFactory
  * ), DataComposerActionHandler {
  *
@@ -94,16 +95,15 @@ import com.debdut.composer.store.factory.StoreFactory
  *
  * @param UISTATE The base UI state type for all widgets
  * @param INITDATA The initialization data type
- * @param STOREMODEL The widget model type
  * @param storeFactory Factory that creates Store instances
  *
  * @see ListWithHeaderAndFooterDataComposerViewModel
  * @see ListDataComposerHost
  * @see DataComposerActionHandler
  */
-public abstract class ListDataComposerViewModel<UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj>(
-    storeFactory: StoreFactory<UISTATE, INITDATA, STOREMODEL>
-) : ViewModel(), ListDataComposerHost<UISTATE, INITDATA,STOREMODEL> {
+public abstract class ListDataComposerViewModel<UISTATE: UIState, INITDATA: StoreInitObj>(
+    storeFactory: StoreFactory<UISTATE, INITDATA>
+) : ViewModel(), ListDataComposerHost<UISTATE, INITDATA> {
 
     /**
      * Handler for [DataComposerAction]s dispatched by Stores.
@@ -117,11 +117,17 @@ public abstract class ListDataComposerViewModel<UISTATE: UIState, INITDATA: Stor
      *
      * Created lazily using the provided [storeFactory] and [viewModelScope].
      */
-    public override val container: ListDataComposer<UISTATE, INITDATA,STOREMODEL> by lazy {
+    @OptIn(ExperimentalComposerApi::class)
+    public override val container: ListDataComposer<UISTATE, INITDATA> by lazy {
         listDataComposer(
             storeFactory = storeFactory,
             coroutineScope = viewModelScope,
             dataComposerActionHandler = dataComposerActionHandler
         )
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        container.dispose()
     }
 }

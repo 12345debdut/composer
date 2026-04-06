@@ -45,4 +45,4 @@ import com.debdut.composer.store.StoreInitObj
  * @see ListDataComposer
  * @see SingleDataComposerHost
  */
-public interface SingleDataComposer<UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODEL: StoreInitObj>: DataComposer<UISTATE, INITOBJ, STOREMODEL>
+public interface SingleDataComposer<UISTATE: UIState, INITOBJ: StoreInitObj>: DataComposer<UISTATE, INITOBJ>

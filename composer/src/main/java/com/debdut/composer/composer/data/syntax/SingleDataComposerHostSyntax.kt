@@ -30,7 +30,7 @@ import kotlinx.coroutines.CoroutineScope
  * @param coroutineScope The scope to launch the observation in
  * @param observer Callback invoked with the single state on each update
  */
-public fun <UISTATE : UIState, INITDATA : StoreInitObj, STOREMODEL: StoreInitObj> SingleDataComposerHost<UISTATE, INITDATA, STOREMODEL>.observeState(
+public fun <UISTATE : UIState, INITDATA : StoreInitObj> SingleDataComposerHost<UISTATE, INITDATA>.observeState(
     coroutineScope: CoroutineScope,
     observer: UISTATE.() -> Unit
 ) {

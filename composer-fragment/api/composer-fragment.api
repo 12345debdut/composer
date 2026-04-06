@@ -1,0 +1,15 @@
+public abstract class com/debdut/composer/uicomponents/ListUIComposerFragment : androidx/fragment/app/Fragment, com/debdut/composer/composer/ui/ListUIComposer {
+	public fun <init> (I)V
+	public abstract fun handleUIAction (Lcom/debdut/composer/action/holder/UIComposerActionHolder;)V
+	public fun onViewCreated (Landroid/view/View;Landroid/os/Bundle;)V
+	public abstract fun render (Ljava/util/List;)V
+}
+
+public abstract class com/debdut/composer/uicomponents/ListUIComposerWithHeaderAndFooterFragment : com/debdut/composer/uicomponents/ListUIComposerFragment, com/debdut/composer/composer/ui/ListUIComposerWithHeaderAndFooter {
+	public fun <init> (I)V
+	public abstract fun getContainer ()Lcom/debdut/composer/composer/data/host/ListWithHeaderAndFooterDataComposerHost;
+	public fun onViewCreated (Landroid/view/View;Landroid/os/Bundle;)V
+	public abstract fun renderFooter (Ljava/util/List;)V
+	public abstract fun renderHeader (Ljava/util/List;)V
+}
+

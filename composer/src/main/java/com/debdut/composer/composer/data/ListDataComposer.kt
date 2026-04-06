@@ -16,7 +16,7 @@ import com.debdut.composer.store.StoreInitObj
  * - Any screen composed of multiple independent widgets
  *
  * ## Widget Order
- * The state list order matches the widget list order passed to [initialiseWithWidgets].
+ * The state list order matches the widget list order passed to [initializeWithWidgets].
  * Hidden widgets (where `visible = false`) are filtered out before emission.
  *
  * ## Usage
@@ -54,4 +54,4 @@ import com.debdut.composer.store.StoreInitObj
  * @see ListWithHeaderAndFooterDataComposer
  * @see ListDataComposerHost
  */
-public interface ListDataComposer<UISTATE : UIState, INITOBJ : StoreInitObj, STOREMODEL: StoreInitObj>: DataComposer<UISTATE, INITOBJ, STOREMODEL>
+public interface ListDataComposer<UISTATE : UIState, INITOBJ : StoreInitObj>: DataComposer<UISTATE, INITOBJ>

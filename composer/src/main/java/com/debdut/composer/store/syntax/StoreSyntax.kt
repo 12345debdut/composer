@@ -73,7 +73,7 @@ import kotlinx.coroutines.flow.update
  * @param block Transformation function that receives current state and returns new state
  * @return The new state after update, or null if current state was null
  */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> Store<UISTATE, INITDATA, STOREMODEL>.updateState(block: UISTATE.() -> UISTATE?): UISTATE? {
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> Store<UISTATE, INITDATA>.updateState(block: UISTATE.() -> UISTATE?): UISTATE? {
     val prevState = mutableUiStateFlow.value
     val newState = prevState?.block()
     mutableUiStateFlow.update {
@@ -97,18 +97,18 @@ public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> 
  * }
  * ```
  */
-public val <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> Store<UISTATE, INITDATA, STOREMODEL>.currentState: UISTATE?
+public val <UISTATE: UIState, INITDATA: StoreInitObj> Store<UISTATE, INITDATA>.currentState: UISTATE?
     get() = mutableUiStateFlow.value
 
 /**
  * Emit a completely new state, replacing the current state.
  *
  * Unlike [updateState], this doesn't transform existing state - it replaces it entirely.
- * Typically used in [Store.initialise] to set up initial state.
+ * Typically used in [Store.initialize] to set up initial state.
  *
  * ## Example
  * ```kotlin
- * override fun initialise(globalModel: InitModel) {
+ * override fun initialize(globalModel: InitModel) {
  *     emitState {
  *         MyWidgetState(
  *             value = globalModel.defaultValue,
@@ -120,7 +120,7 @@ public val <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> 
  *
  * @param block Factory function that creates the new state
  */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> Store<UISTATE, INITDATA, STOREMODEL>.emitState(block: () -> UISTATE) {
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> Store<UISTATE, INITDATA>.emitState(block: () -> UISTATE) {
     mutableUiStateFlow.update {
         block.invoke()
     }
@@ -154,7 +154,7 @@ public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> 
  * }
  * ```
  */
-public val <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> Store<UISTATE, INITDATA, STOREMODEL>.storeScope: CoroutineScope
+public val <UISTATE: UIState, INITDATA: StoreInitObj> Store<UISTATE, INITDATA>.storeScope: CoroutineScope
     get() = coroutineScope
 
 /**
@@ -176,7 +176,7 @@ public val <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> 
  *
  * @param action The composer action to dispatch
  */
-public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> Store<UISTATE, INITDATA,STOREMODEL>.suspendDispatch(action: ComposerAction) {
+public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj> Store<UISTATE, INITDATA>.suspendDispatch(action: ComposerAction) {
     when (val actionHolder = action.toActionHolder(storeId = storeId)) {
         is UIComposerActionHolder -> mutableUiSideEffects.emit(actionHolder)
         is DataComposerActionHolder -> mutableComposerSideEffects.emit(actionHolder)
@@ -192,7 +192,7 @@ public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreI
  * @param action The composer action to dispatch
  * @return true if the action was emitted, false if buffer was full
  */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> Store<UISTATE, INITDATA, STOREMODEL>.dispatch(action: ComposerAction): Boolean {
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> Store<UISTATE, INITDATA>.dispatch(action: ComposerAction): Boolean {
     return when (val actionHolder = action.toActionHolder(storeId = storeId)) {
         is UIComposerActionHolder -> mutableUiSideEffects.tryEmit(actionHolder)
         is DataComposerActionHolder -> mutableComposerSideEffects.tryEmit(actionHolder)
@@ -219,7 +219,7 @@ private fun ComposerAction.toActionHolder(storeId: StoreId): ActionHolder? {
  *
  * @param action The store action to process
  */
-public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> Store<UISTATE, INITDATA, STOREMODEL>.send(action: StoreAction) {
+public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj> Store<UISTATE, INITDATA>.send(action: StoreAction) {
     if (action.actionId in subscribedStoreAction) receive(action, StoreId.Empty)
 }
 
@@ -232,6 +232,6 @@ public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreI
  * @param action The store action to process
  * @param storeId The ID of the Store that dispatched this action
  */
-public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> Store<UISTATE, INITDATA, STOREMODEL>.send(action: StoreAction, storeId: StoreId) {
+public suspend fun <UISTATE: UIState, INITDATA: StoreInitObj> Store<UISTATE, INITDATA>.send(action: StoreAction, storeId: StoreId) {
     if (action.actionId in subscribedStoreAction) receive(action, storeId)
 }

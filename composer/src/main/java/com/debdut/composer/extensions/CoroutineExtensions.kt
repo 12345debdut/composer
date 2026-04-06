@@ -40,9 +40,9 @@ import kotlinx.coroutines.launch
  * @return A Job that can be cancelled to stop collection
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-internal fun <T: ActionHolder, UISTATE: UIState, INITOBJ: StoreInitObj, STOREMODEL: StoreInitObj> CoroutineScope.collectActionHolder(
-    list: List<Store<UISTATE, INITOBJ, STOREMODEL>>,
-    property: Store<UISTATE, INITOBJ, STOREMODEL>.() -> SharedFlow<ActionHolder>,
+internal fun <T: ActionHolder, UISTATE: UIState, INITOBJ: StoreInitObj> CoroutineScope.collectActionHolder(
+    list: List<Store<UISTATE, INITOBJ>>,
+    property: Store<UISTATE, INITOBJ>.() -> SharedFlow<ActionHolder>,
     block: suspend (T) -> Unit
 ): Job {
     val sideEffects = list.map(property)

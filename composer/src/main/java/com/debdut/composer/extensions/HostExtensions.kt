@@ -1,5 +1,6 @@
 package com.debdut.composer.extensions
 
+import com.debdut.composer.ExperimentalComposerApi
 import com.debdut.composer.composer.data.DataComposerActionHandler
 import com.debdut.composer.composer.data.ListDataComposer
 import com.debdut.composer.composer.data.ListWithHeaderAndFooterDataComposer
@@ -10,7 +11,9 @@ import com.debdut.composer.composer.data.impl.SingleDataComposerImpl
 import com.debdut.composer.state.UIState
 import com.debdut.composer.store.StoreInitObj
 import com.debdut.composer.store.factory.StoreFactory
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 /**
  * Factory functions for creating DataComposer instances.
@@ -39,16 +42,20 @@ import kotlinx.coroutines.CoroutineScope
  * @param storeFactory Factory that creates Store instances for each WidgetId
  * @param coroutineScope Scope for coroutines (typically viewModelScope)
  * @param dataComposerActionHandler Handler for DataComposerActions
+ * @param dispatcher CoroutineDispatcher for parallel operations (default: Dispatchers.Default)
  * @return A new ListDataComposer instance
  */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> listDataComposer(
-    storeFactory: StoreFactory<UISTATE, INITDATA, STOREMODEL>,
+@ExperimentalComposerApi
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> listDataComposer(
+    storeFactory: StoreFactory<UISTATE, INITDATA>,
     coroutineScope: CoroutineScope,
-    dataComposerActionHandler: DataComposerActionHandler
-): ListDataComposer<UISTATE, INITDATA,STOREMODEL> = ListDataComposerImpl(
+    dataComposerActionHandler: DataComposerActionHandler,
+    dispatcher: CoroutineDispatcher = Dispatchers.Default
+): ListDataComposer<UISTATE, INITDATA> = ListDataComposerImpl(
     storeFactory = storeFactory,
     coroutineScope = coroutineScope,
-    dataComposerActionHandler = dataComposerActionHandler
+    dataComposerActionHandler = dataComposerActionHandler,
+    dispatcher = dispatcher
 )
 
 /**
@@ -57,16 +64,20 @@ public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> 
  * @param storeFactory Factory that creates Store instances for each WidgetId
  * @param coroutineScope Scope for coroutines (typically viewModelScope)
  * @param dataComposerActionHandler Handler for DataComposerActions
+ * @param dispatcher CoroutineDispatcher for parallel operations (default: Dispatchers.Default)
  * @return A new SingleDataComposer instance
  */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> singleDataComposer(
-    storeFactory: StoreFactory<UISTATE, INITDATA, STOREMODEL>,
+@ExperimentalComposerApi
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> singleDataComposer(
+    storeFactory: StoreFactory<UISTATE, INITDATA>,
     coroutineScope: CoroutineScope,
-    dataComposerActionHandler: DataComposerActionHandler
-): SingleDataComposer<UISTATE, INITDATA,STOREMODEL> = SingleDataComposerImpl(
-    storeFactory = storeFactory,
+    dataComposerActionHandler: DataComposerActionHandler,
+    dispatcher: CoroutineDispatcher = Dispatchers.Default
+): SingleDataComposer<UISTATE, INITDATA> = SingleDataComposerImpl(
     coroutineScope = coroutineScope,
-    dataComposerActionHandler = dataComposerActionHandler
+    storeFactory = storeFactory,
+    dataComposerActionHandler = dataComposerActionHandler,
+    dispatcher = dispatcher
 )
 
 /**
@@ -80,14 +91,18 @@ public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> 
  * @param storeFactory Factory that creates Store instances for each WidgetId
  * @param coroutineScope Scope for coroutines (typically viewModelScope)
  * @param dataComposerActionHandler Handler for DataComposerActions
+ * @param dispatcher CoroutineDispatcher for parallel operations (default: Dispatchers.Default)
  * @return A new ListWithHeaderAndFooterDataComposer instance
  */
-public fun <UISTATE: UIState, INITDATA: StoreInitObj, STOREMODEL: StoreInitObj> listWithHeaderAndFooterDataComposer(
-    storeFactory: StoreFactory<UISTATE, INITDATA, STOREMODEL>,
+@ExperimentalComposerApi
+public fun <UISTATE: UIState, INITDATA: StoreInitObj> listWithHeaderAndFooterDataComposer(
+    storeFactory: StoreFactory<UISTATE, INITDATA>,
     coroutineScope: CoroutineScope,
-    dataComposerActionHandler: DataComposerActionHandler
-): ListWithHeaderAndFooterDataComposer<UISTATE, INITDATA,STOREMODEL> = ListWithHeaderFooterDataComposerImpl(
+    dataComposerActionHandler: DataComposerActionHandler,
+    dispatcher: CoroutineDispatcher = Dispatchers.Default
+): ListWithHeaderAndFooterDataComposer<UISTATE, INITDATA> = ListWithHeaderFooterDataComposerImpl(
     storeFactory = storeFactory,
     coroutineScope = coroutineScope,
-    dataComposerActionHandler = dataComposerActionHandler
+    dataComposerActionHandler = dataComposerActionHandler,
+    dispatcher = dispatcher
 )
