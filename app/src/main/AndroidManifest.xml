@@ -22,6 +22,11 @@
         </activity>
 
         <activity
+            android:name="com.debdut.composer.sample.fragment.FragmentCounterActivity"
+            android:exported="false"
+            android:label="Fragment Counter" />
+
+        <activity
             android:name="com.debdut.composer.sample.compose.ComposeCounterActivity"
             android:exported="false"
             android:label="Compose Counter" />

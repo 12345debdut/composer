@@ -1,0 +1,61 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Generate API docs (Dokka)
+        run: ./gradlew :composer:dokkaHtml :composer-compose:dokkaHtml
+
+      - name: Build Jekyll site from docs/
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: docs
+          destination: ./_site
+
+      - name: Copy Dokka API docs into site
+        run: |
+          mkdir -p _site/api/composer _site/api/composer-compose
+          cp -r composer/build/dokka/html/* _site/api/composer/
+          cp -r composer-compose/build/dokka/html/* _site/api/composer-compose/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,16 @@
+title: Composer Library
+description: Unidirectional state management for Android
+remote_theme: just-the-docs/just-the-docs
+
+url: https://12345debdut.github.io
+baseurl: /composerlibrary
+
+aux_links:
+  GitHub: https://github.com/12345debdut/composerlibrary
+  Maven Central: https://central.sonatype.com/artifact/io.github.debdutsaha/composer
+
+footer_content: "Copyright &copy; 2024 Debdut Saha. Licensed under Apache 2.0."
+
+search_enabled: true
+
+nav_external_links: []

@@ -4,7 +4,7 @@ First off, thank you for considering contributing to Composer Library! It's peop
 
 ## Code of Conduct
 
-This project adheres to a Code of Conduct that all contributors are expected to follow. Please be respectful and constructive in all interactions.
+This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). Please be respectful and constructive in all interactions.
 
 ## How Can I Contribute?
 
@@ -52,22 +52,27 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/12345debdut/composer.git
-   cd composer
+   git clone https://github.com/12345debdut/composerlibrary.git
+   cd composerlibrary
    ```
 
 2. Open the project in Android Studio
 
 3. Make your changes
 
-4. Run tests:
+4. Build all modules:
    ```bash
-   ./gradlew test
+   ./gradlew :composer:build :composer-compose:build :composer-bom:build :app:build
    ```
 
-5. Build the library:
+5. Run tests:
    ```bash
-   ./gradlew :composer:assembleRelease
+   ./gradlew :composer:test :composer-compose:test
+   ```
+
+6. Check binary API compatibility:
+   ```bash
+   ./gradlew :composer:apiCheck :composer-compose:apiCheck
    ```
 
 ## Coding Standards
