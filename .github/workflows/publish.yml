@@ -72,17 +72,17 @@ jobs:
         run: ./gradlew :composer:apiCheck :composer-compose:apiCheck
 
       # ── Prepare GPG key ────────────────────────────────────────────────────
-      # The SIGNING_KEY secret stores the full ASCII-armored PGP private key
-      # (with BEGIN/END headers). Strip headers/blanks and join into one line
-      # for the Vanniktech in-memory signing property.
+      # The SIGNING_KEY secret stores the full ASCII-armored PGP private key.
+      # Write to file, strip headers, and export as a Gradle property file
+      # entry so newlines are never lost in shell interpolation.
       - name: Prepare GPG signing key
-        id: gpg
         env:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
-          KEY=$(printf '%s\n' "$SIGNING_KEY" | grep -v '^----' | grep -v '^$' | tr -d '\n')
-          echo "::add-mask::$KEY"
-          echo "key=$KEY" >> $GITHUB_OUTPUT
+          echo "$SIGNING_KEY" > /tmp/signing-key.asc
+          KEY=$(grep -v '^-' /tmp/signing-key.asc | grep -v '^$' | tr -d '\n' | tr -d ' ')
+          echo "signingInMemoryKey=$KEY" >> "$GRADLE_USER_HOME/gradle.properties"
+          rm /tmp/signing-key.asc
 
       # ── Publish all three artifacts atomically ──────────────────────────────
       - name: Publish all modules to Maven Central
@@ -97,7 +97,6 @@ jobs:
           ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.version }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ steps.gpg.outputs.key }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
       # ── Archive the release AARs for audit ─────────────────────────────────
