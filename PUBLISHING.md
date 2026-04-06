@@ -1,151 +1,136 @@
 # Publishing Guide
 
-This guide explains how to publish the Composer library to GitHub Packages.
+This guide explains how to publish the Composer library to **Maven Central** via the Sonatype Central Portal.
 
 ## Prerequisites
 
-1. A GitHub account with access to the repository
-2. A GitHub Personal Access Token (PAT) with `write:packages` permission
+1. A Sonatype Central Portal account at [central.sonatype.com](https://central.sonatype.com)
+2. The namespace `io.github.debdutsaha` verified on the Central Portal
+3. A GPG key pair for signing artifacts
 
-### Creating a GitHub Personal Access Token
+---
 
-1. Go to [GitHub Settings > Developer settings > Personal access tokens > Tokens (classic)](https://github.com/settings/tokens)
-2. Click "Generate new token (classic)"
-3. Give it a descriptive name (e.g., "Composer Library Publishing")
-4. Select the `write:packages` scope
-5. Click "Generate token"
-6. **Copy the token immediately** - you won't be able to see it again!
+## One-Time Setup
 
-## Configuration
+### 1. Register on Sonatype Central Portal
 
-### Step 1: Set Up Authentication
+1. Sign up at [central.sonatype.com](https://central.sonatype.com)
+2. Navigate to **Account > Namespaces** and add `io.github.debdutsaha`
+3. Verify the namespace (you'll be asked to create a temporary public repo)
+4. Generate a **User Token** under **Account > Access User Token** — this gives you a username/password pair for publishing
 
-Add your GitHub credentials to `local.properties` (this file is already in `.gitignore`):
-
-```properties
-GITHUB_USER=debdutsaha
-GITHUB_TOKEN=your_personal_access_token_here
-VERSION_NAME=1.0.0
-```
-
-**Important:** Never commit `local.properties` to version control!
-
-### Alternative: Environment Variables
-
-You can also set these as environment variables:
+### 2. Generate a GPG Key
 
 ```bash
-export GITHUB_USER=debdutsaha
-export GITHUB_TOKEN=your_personal_access_token_here
-export VERSION_NAME=1.0.0
+# Generate a new key (use RSA 4096)
+gpg --gen-key
+
+# List keys and note your key ID
+gpg --list-secret-keys --keyid-format LONG
+
+# Export the private key in ASCII armor
+gpg --export-secret-keys --armor YOUR_KEY_ID > signing-key.asc
+
+# Publish your public key to a key server (required by Maven Central)
+gpg --keyserver keyserver.ubuntu.com --send-keys YOUR_KEY_ID
 ```
+
+### 3. Configure Local Credentials
+
+Add the following to your `local.properties` (never commit this file):
+
+```properties
+mavenCentralUsername=your-central-portal-user-token-username
+mavenCentralPassword=your-central-portal-user-token-password
+signingInMemoryKey=-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----
+signingInMemoryKeyPassword=your-gpg-passphrase
+```
+
+> `signingInMemoryKey` is the full content of your exported `signing-key.asc`, with literal `\n` replacing each newline.
+
+### 4. Configure GitHub Actions Secrets
+
+For automated CI/CD publishing, add these four secrets to your GitHub repository
+(**Settings → Secrets and variables → Actions**):
+
+| Secret | Value |
+|--------|-------|
+| `MAVEN_CENTRAL_USERNAME` | Central Portal user token username |
+| `MAVEN_CENTRAL_PASSWORD` | Central Portal user token password |
+| `SIGNING_KEY` | Full GPG private key (ASCII armor, newlines as `\n`) |
+| `SIGNING_KEY_PASSWORD` | GPG key passphrase |
+
+---
 
 ## Publishing
 
-### Step 1: Update Version
+### Version Management
 
-Before publishing, update the version in `local.properties`:
+Update `VERSION_NAME` in `gradle.properties` before each release:
 
 ```properties
 VERSION_NAME=1.0.1
 ```
 
-### Step 2: Build and Publish
+Follow [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
-**Option A: Using the Publishing Script (Recommended)**
-
-Simply run:
+### Option A: Using the Publishing Script
 
 ```bash
 ./publish.sh
 ```
 
-The script will:
-- Verify your configuration
-- Build the release variant
-- Publish to GitHub Packages
+The script builds a release, runs tests, checks binary API compatibility, and publishes all three artifacts atomically.
 
-**Option B: Manual Gradle Command**
-
-Run the following Gradle command from the project root:
+### Option B: Manual Gradle Commands
 
 ```bash
-./gradlew :composer:publishReleasePublicationToGitHubPackagesRepository
+./gradlew \
+  :composer:publishAndReleaseToMavenCentral \
+  :composer-compose:publishAndReleaseToMavenCentral \
+  :composer-bom:publishAndReleaseToMavenCentral \
+  --no-configuration-cache
 ```
 
-Or on Windows:
+### Option C: Automated via GitHub Actions
 
-```bash
-gradlew.bat :composer:publishReleasePublicationToGitHubPackagesRepository
-```
+Publishing is triggered automatically when you create a **GitHub Release**:
 
-### Step 3: Verify Publication
+1. Bump `VERSION_NAME` in `gradle.properties` and commit
+2. Go to **GitHub → Releases → Draft a new release**
+3. Create a tag (e.g., `v1.0.1`) and publish the release
+4. The `publish.yml` workflow runs: tests → `apiCheck` → publish all three artifacts
 
-1. Go to your GitHub repository: `https://github.com/debdutsaha/composerlibrary`
-2. Click on "Packages" (on the right side of the repository page)
-3. You should see your published package with the version you specified
+---
 
-## Version Management
+## Verification
 
-- Use [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
-- Examples:
-  - `1.0.0` - Initial release
-  - `1.0.1` - Bug fix
-  - `1.1.0` - New features (backward compatible)
-  - `2.0.0` - Breaking changes
+After publishing, verify your artifacts:
+
+1. Log in to [central.sonatype.com](https://central.sonatype.com) and check **Deployments**
+2. Once released, search Maven Central: `https://central.sonatype.com/artifact/io.github.debdutsaha/composer`
+3. Consumers can add the dependency immediately after the deployment is **Released** (not just uploaded)
+
+---
 
 ## Troubleshooting
 
+### Signing Failed
+- Ensure `signingInMemoryKey` contains the full key including header/footer lines
+- Check that newlines are escaped as `\n` in the properties value
+- Verify `signingInMemoryKeyPassword` matches the key's passphrase
+
 ### Authentication Failed
+- Regenerate a **User Token** from the Central Portal (not your account password)
+- Confirm the token username/password are copied exactly — no leading/trailing spaces
 
-- Verify your `GITHUB_TOKEN` has `write:packages` permission
-- Check that `GITHUB_USER` matches your GitHub username
-- Ensure credentials are set in `local.properties` or as environment variables
+### Namespace Not Verified
+- The `io.github.debdutsaha` namespace must be verified on the Central Portal
+- Verification requires a public GitHub repo named after the verification code provided
 
-### Publication Failed
+### Version Already Exists
+- Maven Central does not allow overwriting published versions
+- Bump `VERSION_NAME` and re-publish
 
-- Make sure you've built the release variant: `./gradlew :composer:assembleRelease`
-- Check that the version number is unique (GitHub Packages doesn't allow overwriting existing versions)
-- Verify your repository name matches: `debdutsaha/composerlibrary`
-
-### Package Not Found After Publishing
-
-- It may take a few minutes for the package to appear in GitHub
-- Check the "Packages" section of your repository
-- Verify the package URL: `https://github.com/debdutsaha/composerlibrary/packages`
-
-## CI/CD Integration
-
-For automated publishing, you can use GitHub Actions. Create `.github/workflows/publish.yml`:
-
-```yaml
-name: Publish Package
-
-on:
-  release:
-    types: [created]
-
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Publish package
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_USER: debdutsaha
-          VERSION_NAME: ${{ github.event.release.tag_name }}
-        run: ./gradlew :composer:publishReleasePublicationToGitHubPackagesRepository
-```
-
-This will automatically publish when you create a new GitHub release.
+### `apiCheck` Failed
+Run `./gradlew :composer:apiDump :composer-compose:apiDump` to update the API files, review the diff, then commit the updated `.api` files before re-publishing.

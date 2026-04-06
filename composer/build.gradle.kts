@@ -56,7 +56,7 @@ mavenPublishing {
     publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 
-    coordinates("io.github.debdutsaha", "composer", "2.0.0")
+    coordinates("io.github.debdutsaha", "composer", project.property("VERSION_NAME").toString())
 
     pom {
         name.set("Composer")

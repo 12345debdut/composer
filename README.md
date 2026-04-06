@@ -6,7 +6,7 @@
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-blue.svg)](https://kotlinlang.org)
 [![Android](https://img.shields.io/badge/Android-24+-green.svg)](https://developer.android.com)
-[![Version](https://img.shields.io/badge/Version-2.0.0-orange.svg)](https://github.com/12345debdut/composer)
+[![Version](https://img.shields.io/badge/Version-1.0.0-orange.svg)](https://github.com/12345debdut/composer)
 [![License](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 [Overview](#-overview) • [Architecture](#️-architecture) • [Installation](#-installation) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [License](#-license)
@@ -17,19 +17,34 @@
 
 ## 🚀 Add to Your Project
 
-### Dependency
+### Option A — Using the BOM (recommended)
+
+The BOM manages versions for all Composer artifacts automatically:
 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.debdutsaha:composer:2.0.0")
+    implementation(platform("io.github.debdutsaha:composer-bom:1.0.0"))
+    implementation("io.github.debdutsaha:composer")
+    implementation("io.github.debdutsaha:composer-compose") // optional: Jetpack Compose extensions
+}
+```
+
+### Option B — Individual artifacts
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation("io.github.debdutsaha:composer:1.0.0")
+    implementation("io.github.debdutsaha:composer-compose:1.0.0") // optional: Jetpack Compose extensions
 }
 ```
 
 ```groovy
 // build.gradle
 dependencies {
-    implementation 'io.github.debdutsaha:composer:2.0.0'
+    implementation 'io.github.debdutsaha:composer:1.0.0'
+    implementation 'io.github.debdutsaha:composer-compose:1.0.0' // optional
 }
 ```
 
@@ -57,14 +72,16 @@ The library is published to **Maven Central** — no extra repository configurat
 
 ### Version
 
-**Current Version:** `2.0.0`
+**Current Version:** `1.0.0`
 
 ### Maven Coordinates
 
 ```
 Group ID:    io.github.debdutsaha
-Artifact ID: composer
-Version:     2.0.0
+Artifact ID: composer              (core)
+             composer-compose      (Jetpack Compose extensions)
+             composer-bom          (BOM — manages versions for both)
+Version:     1.0.0
 ```
 
 ### Repository
@@ -188,7 +205,8 @@ Add the dependency to your module's `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("io.github.debdutsaha:composer:2.0.0")
+    implementation(platform("io.github.debdutsaha:composer-bom:1.0.0"))
+    implementation("io.github.debdutsaha:composer")
 }
 ```
 
@@ -535,6 +553,49 @@ import com.debdut.composer.viewmodel.ListDataComposerViewModel
 
 ---
 
+## 🎨 Jetpack Compose Integration (`composer-compose`)
+
+The `composer-compose` artifact provides first-class Jetpack Compose support via extension functions on `DataComposerHost`.
+
+### Observing state in a Composable
+
+```kotlin
+import com.debdut.composer.compose.collectAsState
+import com.debdut.composer.compose.CollectSideEffect
+
+@Composable
+fun CounterScreen(viewModel: CounterViewModel) {
+    // Lifecycle-aware state collection
+    val states by viewModel.collectAsState()
+
+    val count = states.filterIsInstance<CounterState>().firstOrNull()?.count ?: 0
+
+    // Side-effect handler (toasts, navigation, dialogs)
+    CollectSideEffect(viewModel) { holder ->
+        when (val action = holder.action) {
+            is ShowToastAction -> { /* show toast */ }
+        }
+    }
+
+    Column {
+        Text("Count: $count")
+        Button(onClick = { viewModel.dispatch(IncrementAction()) }) { Text("Increment") }
+    }
+}
+```
+
+### Available extensions
+
+| Extension | Description |
+|-----------|-------------|
+| `host.collectAsState()` | Lifecycle-aware `State<List<UIState>>` — recomposes on state changes, pauses when lifecycle is below `STARTED` |
+| `host.collectAsStateNoLifecycle()` | Same but without lifecycle awareness — use in previews or tests |
+| `CollectSideEffect(host) { }` | Safely collects `UIComposerAction` side effects in a `LaunchedEffect` |
+| `host.uiStateFlow` | Direct access to the underlying `StateFlow<List<UIState>>` |
+| `host.uiActionFlow` | Direct access to the underlying `SharedFlow<UIComposerActionHolder>` |
+
+---
+
 ## 🧪 Testing
 
 Stores can be easily tested in isolation:
@@ -627,7 +688,7 @@ limitations under the License.
 
 ## 📊 Project Status
 
-This project is actively maintained and ready for production use. Current version: **2.0.0**
+This project is actively maintained and ready for production use. Current version: **1.0.0**
 
 ---
 

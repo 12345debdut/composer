@@ -7,10 +7,12 @@ javaPlatform {
     allowDependencies()
 }
 
+val versionName = project.property("VERSION_NAME").toString()
+
 dependencies {
     constraints {
-        api("io.github.debdutsaha:composer:2.0.0")
-        api("io.github.debdutsaha:composer-compose:2.0.0")
+        api("io.github.debdutsaha:composer:$versionName")
+        api("io.github.debdutsaha:composer-compose:$versionName")
     }
 }
 
@@ -18,7 +20,7 @@ mavenPublishing {
     publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 
-    coordinates("io.github.debdutsaha", "composer-bom", "2.0.0")
+    coordinates("io.github.debdutsaha", "composer-bom", versionName)
 
     pom {
         name.set("Composer BOM")

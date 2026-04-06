@@ -22,15 +22,20 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build composer module
-        run: ./gradlew :composer:build
+      - name: Build all modules
+        run: ./gradlew :composer:build :composer-compose:build :composer-bom:build
 
       - name: Run unit tests
-        run: ./gradlew :composer:test
+        run: ./gradlew :composer:test :composer-compose:test
+
+      - name: Check binary API compatibility
+        run: ./gradlew :composer:apiCheck :composer-compose:apiCheck
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: composer/build/reports/tests/
+          path: |
+            composer/build/reports/tests/
+            composer-compose/build/reports/tests/

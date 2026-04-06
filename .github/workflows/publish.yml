@@ -1,8 +1,25 @@
 name: Publish to Maven Central
 
+# Triggers:
+#   1. Automatically when a GitHub Release is published (tag must be vX.Y.Z)
+#   2. Manually via workflow_dispatch with an optional version override
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g. 1.0.1). Defaults to VERSION_NAME in gradle.properties.'
+        required: false
+
+# Prevent concurrent publish jobs — a second run waits rather than cancels,
+# so an in-flight publication is never interrupted.
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   publish:
@@ -11,6 +28,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # ── Resolve the version to publish ─────────────────────────────────────
+      # Priority: release tag  >  workflow_dispatch input  >  gradle.properties
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            VERSION="${VERSION#v}"          # strip leading 'v' (v1.0.0 → 1.0.0)
+          elif [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION=$(grep "^VERSION_NAME=" gradle.properties | cut -d'=' -f2)
+          fi
+
+          # Validate semver (X.Y.Z or X.Y.Z-qualifier)
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
+            echo "Error: '$VERSION' is not a valid semantic version (expected X.Y.Z)"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Resolved publish version: $VERSION"
+
+      # ── Build environment ───────────────────────────────────────────────────
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -20,13 +61,53 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Run tests
-        run: ./gradlew :composer:test
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-      - name: Publish to Maven Central
-        run: ./gradlew :composer:publishAndReleaseToMavenCentral --no-configuration-cache
+      # ── Quality gates (must pass before any artifact is uploaded) ───────────
+      - name: Run unit tests
+        run: ./gradlew :composer:test :composer-compose:test
+
+      - name: Check binary API compatibility
+        run: ./gradlew :composer:apiCheck :composer-compose:apiCheck
+
+      # ── Publish all three artifacts atomically ──────────────────────────────
+      - name: Publish all modules to Maven Central
+        run: |
+          ./gradlew \
+            :composer:publishAndReleaseToMavenCentral \
+            :composer-compose:publishAndReleaseToMavenCentral \
+            :composer-bom:publishAndReleaseToMavenCentral \
+            --no-configuration-cache
         env:
+          ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.version }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+
+      # ── Archive the release AARs for audit ─────────────────────────────────
+      - name: Upload release artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts-${{ steps.version.outputs.version }}
+          path: |
+            composer/build/outputs/aar/composer-release.aar
+            composer-compose/build/outputs/aar/composer-compose-release.aar
+          if-no-files-found: warn
+
+      # ── Print a summary to the Actions run page ─────────────────────────────
+      - name: Write job summary
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          echo "## Publish to Maven Central — $STATUS" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | \`${{ steps.version.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Triggered by | \`${{ github.event_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Artifacts | \`composer\`, \`composer-compose\`, \`composer-bom\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Group | \`io.github.debdutsaha\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Maven Central | [View namespace](https://central.sonatype.com/namespace/io.github.debdutsaha) |" >> $GITHUB_STEP_SUMMARY
