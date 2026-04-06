@@ -73,12 +73,14 @@ jobs:
 
       # ── Prepare GPG key ────────────────────────────────────────────────────
       # The SIGNING_KEY secret stores the full ASCII-armored PGP private key
-      # (with BEGIN/END headers). Strip headers and join into one line for
-      # the Vanniktech in-memory signing property.
+      # (with BEGIN/END headers). Strip headers/blanks and join into one line
+      # for the Vanniktech in-memory signing property.
       - name: Prepare GPG signing key
         id: gpg
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
-          KEY=$(echo "${{ secrets.SIGNING_KEY }}" | grep -v '^\-\-' | grep -v '^$' | tr -d '\n')
+          KEY=$(printf '%s\n' "$SIGNING_KEY" | grep -v '^----' | grep -v '^$' | tr -d '\n')
           echo "::add-mask::$KEY"
           echo "key=$KEY" >> $GITHUB_OUTPUT
 
