@@ -43,6 +43,9 @@ dependencies {
 }
 
 mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+
     coordinates("io.github.debdutsaha", "composer-fragment", project.property("VERSION_NAME").toString())
 
     pom {
@@ -69,6 +72,4 @@ mavenPublishing {
             developerConnection.set("scm:git:ssh://github.com/12345debdut/composerlibrary.git")
         }
     }
-
-    signAllPublications()
 }
