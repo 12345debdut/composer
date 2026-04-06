@@ -71,19 +71,31 @@ jobs:
       - name: Check binary API compatibility
         run: ./gradlew :composer:apiCheck :composer-compose:apiCheck
 
+      # ── Prepare GPG key ────────────────────────────────────────────────────
+      # The SIGNING_KEY secret stores the full ASCII-armored PGP private key
+      # (with BEGIN/END headers). Strip headers and join into one line for
+      # the Vanniktech in-memory signing property.
+      - name: Prepare GPG signing key
+        id: gpg
+        run: |
+          KEY=$(echo "${{ secrets.SIGNING_KEY }}" | grep -v '^\-\-' | grep -v '^$' | tr -d '\n')
+          echo "::add-mask::$KEY"
+          echo "key=$KEY" >> $GITHUB_OUTPUT
+
       # ── Publish all three artifacts atomically ──────────────────────────────
       - name: Publish all modules to Maven Central
         run: |
           ./gradlew \
             :composer:publishAndReleaseToMavenCentral \
             :composer-compose:publishAndReleaseToMavenCentral \
+            :composer-fragment:publishAndReleaseToMavenCentral \
             :composer-bom:publishAndReleaseToMavenCentral \
             --no-configuration-cache
         env:
           ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.version }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ steps.gpg.outputs.key }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
       # ── Archive the release AARs for audit ─────────────────────────────────
@@ -95,6 +107,7 @@ jobs:
           path: |
             composer/build/outputs/aar/composer-release.aar
             composer-compose/build/outputs/aar/composer-compose-release.aar
+            composer-fragment/build/outputs/aar/composer-fragment-release.aar
           if-no-files-found: warn
 
       # ── Print a summary to the Actions run page ─────────────────────────────
@@ -108,6 +121,6 @@ jobs:
           echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Version | \`${{ steps.version.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Triggered by | \`${{ github.event_name }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Artifacts | \`composer\`, \`composer-compose\`, \`composer-bom\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Artifacts | \`composer\`, \`composer-compose\`, \`composer-fragment\`, \`composer-bom\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Group | \`io.github.debdutsaha\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Maven Central | [View namespace](https://central.sonatype.com/namespace/io.github.debdutsaha) |" >> $GITHUB_STEP_SUMMARY
