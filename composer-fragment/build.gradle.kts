@@ -1,9 +1,10 @@
 plugins {
     id("com.android.library")
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.vanniktech.publish)
     alias(libs.plugins.binary.compat)
 }
+
+apply(plugin = "publish-convention")
 
 android {
     namespace = "com.debdut.composer.fragment"
@@ -31,6 +32,11 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 
     kotlin {
         explicitApi()
@@ -40,36 +46,4 @@ android {
 dependencies {
     api(project(":composer"))
     api(libs.androidx.fragment.ktx)
-}
-
-mavenPublishing {
-    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
-    signAllPublications()
-
-    coordinates("io.github.debdutsaha", "composer-fragment", project.property("VERSION_NAME").toString())
-
-    pom {
-        name.set("Composer Fragment")
-        description.set("Fragment integration for the Composer state management library")
-        url.set("https://github.com/12345debdut/composerlibrary")
-
-        licenses {
-            license {
-                name.set("Apache License 2.0")
-                url.set("https://www.apache.org/licenses/LICENSE-2.0")
-            }
-        }
-        developers {
-            developer {
-                id.set("debdutsaha")
-                name.set("Debdut Saha")
-                email.set("debdut.saha.1@gmail.com")
-            }
-        }
-        scm {
-            url.set("https://github.com/12345debdut/composerlibrary")
-            connection.set("scm:git:git://github.com/12345debdut/composerlibrary.git")
-            developerConnection.set("scm:git:ssh://github.com/12345debdut/composerlibrary.git")
-        }
-    }
 }

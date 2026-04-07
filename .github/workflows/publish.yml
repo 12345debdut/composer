@@ -9,17 +9,19 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to publish (e.g. 1.0.1). Defaults to VERSION_NAME in gradle.properties.'
+        description: 'Version to publish (e.g. 1.0.1). Defaults to LIBRARY_VERSION in gradle.properties.'
         required: false
 
-# Prevent concurrent publish jobs — a second run waits rather than cancels,
-# so an in-flight publication is never interrupted.
+# Prevent concurrent publish jobs — a second run waits rather than cancels.
 concurrency:
   group: publish
   cancel-in-progress: false
 
 permissions:
   contents: read
+
+env:
+  NAMESPACE: io.github.debdutsaha
 
 jobs:
   publish:
@@ -29,20 +31,18 @@ jobs:
       - uses: actions/checkout@v4
 
       # ── Resolve the version to publish ─────────────────────────────────────
-      # Priority: release tag  >  workflow_dispatch input  >  gradle.properties
       - name: Resolve version
         id: version
         run: |
           if [ "${{ github.event_name }}" = "release" ]; then
             VERSION="${{ github.event.release.tag_name }}"
-            VERSION="${VERSION#v}"          # strip leading 'v' (v1.0.0 → 1.0.0)
+            VERSION="${VERSION#v}"
           elif [ -n "${{ inputs.version }}" ]; then
             VERSION="${{ inputs.version }}"
           else
-            VERSION=$(grep "^VERSION_NAME=" gradle.properties | cut -d'=' -f2)
+            VERSION=$(grep "^LIBRARY_VERSION=" gradle.properties | cut -d'=' -f2)
           fi
 
-          # Validate semver (X.Y.Z or X.Y.Z-qualifier)
           if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
             echo "Error: '$VERSION' is not a valid semantic version (expected X.Y.Z)"
             exit 1
@@ -64,66 +64,6 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # ── Diagnose signing key (no secrets leaked) ───────────────────────────
-      # Validates the SIGNING_KEY secret can actually be parsed by GPG itself
-      # BEFORE Gradle tries to use it. If gpg --import fails here, the key is
-      # malformed at the secret level (line endings, truncation, wrong format).
-      - name: Diagnose signing secrets
-        env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        run: |
-          set -e
-          echo "── Secret presence ─────────────────────────────"
-          if [ -z "$SIGNING_KEY" ]; then
-            echo "FATAL: SIGNING_KEY secret is empty/unset"; exit 1
-          fi
-          if [ -z "$SIGNING_KEY_ID" ]; then
-            echo "WARN: SIGNING_KEY_ID is empty"
-          else
-            echo "SIGNING_KEY_ID length: ${#SIGNING_KEY_ID}"
-          fi
-          if [ -z "$SIGNING_KEY_PASSWORD" ]; then
-            echo "WARN: SIGNING_KEY_PASSWORD is empty"
-          fi
-
-          echo "── SIGNING_KEY shape ───────────────────────────"
-          echo "byte length: ${#SIGNING_KEY}"
-          echo "line count : $(printf '%s' "$SIGNING_KEY" | wc -l)"
-          FIRST_LINE=$(printf '%s' "$SIGNING_KEY" | head -n1)
-          LAST_LINE=$(printf '%s' "$SIGNING_KEY" | tail -n1)
-          echo "first line : $FIRST_LINE"
-          echo "last  line : $LAST_LINE"
-
-          # Detect format
-          if printf '%s' "$SIGNING_KEY" | head -n1 | grep -q "BEGIN PGP PRIVATE KEY BLOCK"; then
-            FORMAT="armored"
-          elif printf '%s' "$SIGNING_KEY" | base64 -d >/dev/null 2>&1; then
-            FORMAT="base64-binary"
-          else
-            FORMAT="unknown"
-          fi
-          echo "detected format: $FORMAT"
-
-          echo "── gpg --import dry run ────────────────────────"
-          mkdir -p "$RUNNER_TEMP/gpg"
-          chmod 700 "$RUNNER_TEMP/gpg"
-          export GNUPGHOME="$RUNNER_TEMP/gpg"
-          if [ "$FORMAT" = "armored" ]; then
-            printf '%s\n' "$SIGNING_KEY" > "$RUNNER_TEMP/key.asc"
-            gpg --batch --import "$RUNNER_TEMP/key.asc"
-          elif [ "$FORMAT" = "base64-binary" ]; then
-            printf '%s' "$SIGNING_KEY" | base64 -d > "$RUNNER_TEMP/key.gpg"
-            gpg --batch --import "$RUNNER_TEMP/key.gpg"
-          else
-            echo "FATAL: SIGNING_KEY is neither ASCII-armored nor valid base64"
-            echo "first 80 chars: $(printf '%s' "$SIGNING_KEY" | head -c 80)"
-            exit 1
-          fi
-          echo "── gpg --list-secret-keys ──────────────────────"
-          gpg --list-secret-keys --keyid-format LONG
-
       # ── Quality gates (must pass before any artifact is uploaded) ───────────
       - name: Run unit tests
         run: ./gradlew :composer:test :composer-compose:test
@@ -131,106 +71,61 @@ jobs:
       - name: Check binary API compatibility
         run: ./gradlew :composer:apiCheck :composer-compose:apiCheck
 
-      # ── Re-export the imported key as ASCII-armored text ───────────────────
-      # Gradle's signing.useInMemoryPgpKeys() (which Vanniktech wraps) requires
-      # an ASCII-armored key. The SIGNING_KEY secret is base64-binary, which
-      # GPG accepts but Gradle's BouncyCastle parser does not. Re-exporting
-      # from the just-imported GPG keyring gives us a guaranteed-correct
-      # armored block, and we write it to gradle.properties (rather than env
-      # vars or -P flags) so multiline content survives intact.
-      - name: Re-export key as ASCII-armored and stage gradle.properties
-        env:
-          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        run: |
-          set -e
-          export GNUPGHOME="$RUNNER_TEMP/gpg"
-          KEY_LONG_ID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
-          # Vanniktech's signingInMemoryKeyId wants the last 8 hex chars
-          KEY_SHORT_ID="${KEY_LONG_ID: -8}"
-          echo "Long  key id: $KEY_LONG_ID"
-          echo "Short key id: $KEY_SHORT_ID"
-
-          # Sanity-check the passphrase value before passing it to gpg.
-          # If the passphrase starts with "-" or "lQdG" (base64 PGP magic) the
-          # caller has almost certainly stored the key material in the
-          # SIGNING_KEY_PASSWORD secret by mistake — fail loudly.
-          case "$SIGNING_KEY_PASSWORD" in
-            -*|lQdG*|*BEGIN*PGP*)
-              echo "FATAL: SIGNING_KEY_PASSWORD looks like key material, not a passphrase."
-              echo "       Update the GitHub secret to hold the passphrase only (or empty)."
-              exit 1 ;;
-          esac
-
-          # Pass passphrase via stdin (--passphrase-fd 0) so gpg never sees it
-          # as an argv element. Works for empty passphrases too.
-          printf '%s' "$SIGNING_KEY_PASSWORD" | gpg \
-              --batch --yes --pinentry-mode loopback \
-              --passphrase-fd 0 \
-              --armor \
-              --export-secret-keys "$KEY_LONG_ID" \
-              > "$RUNNER_TEMP/key.asc"
-
-          if [ ! -s "$RUNNER_TEMP/key.asc" ]; then
-            echo "FATAL: gpg produced an empty armored export — passphrase wrong?"
-            exit 1
-          fi
-
-          echo "── armored key sanity check ────────────────────"
-          head -n1 "$RUNNER_TEMP/key.asc"
-          tail -n1 "$RUNNER_TEMP/key.asc"
-          wc -l "$RUNNER_TEMP/key.asc"
-
-          # Write to the PROJECT root gradle.properties (highest file precedence
-          # after -P / env vars) so no cache restore or init script can shadow
-          # it. The key value MUST be one physical line with literal "\n" escape
-          # sequences — java.util.Properties decodes those back to real newlines,
-          # while its backslash-newline *continuation* syntax JOINS lines and
-          # DROPS the newline, which corrupts armored PGP keys.
-          KEY_ESCAPED=$(awk 'BEGIN{ORS=""} {print $0 "\\n"}' "$RUNNER_TEMP/key.asc")
-          {
-            echo ""
-            echo "# injected by publish workflow — do not commit"
-            echo "signingInMemoryKeyId=$KEY_SHORT_ID"
-            echo "signingInMemoryKeyPassword=$SIGNING_KEY_PASSWORD"
-            echo "signingInMemoryKey=$KEY_ESCAPED"
-          } >> "$GITHUB_WORKSPACE/gradle.properties"
-
-          echo "── gradle.properties (key value masked) ────────"
-          grep -c '^signingInMemoryKey=' "$HOME/.gradle/gradle.properties" || true
-          grep '^signingInMemoryKeyId=' "$HOME/.gradle/gradle.properties" | sed 's/=.*/=***/'
-
-          # Wipe the on-disk armored copy now that it's in gradle.properties
-          rm -f "$RUNNER_TEMP/key.asc"
-
-      - name: Verify Gradle can see signing properties
-        run: |
-          ./gradlew -q :composer-bom:properties --no-configuration-cache \
-            | grep -E '^signingInMemoryKey(Id)?:' || true
-          # Print only presence + length, never the value itself.
-          ./gradlew -q --no-configuration-cache -I /dev/stdin help <<'EOF'
-          allprojects {
-            afterEvaluate {
-              def has = { name -> project.findProperty(name) != null }
-              def len = { name -> (project.findProperty(name) as String)?.length() ?: 0 }
-              println "[verify] ${project.path} signingInMemoryKey present=${has('signingInMemoryKey')} length=${len('signingInMemoryKey')}"
-              println "[verify] ${project.path} signingInMemoryKeyId present=${has('signingInMemoryKeyId')} length=${len('signingInMemoryKeyId')}"
-              println "[verify] ${project.path} signingInMemoryKeyPassword present=${has('signingInMemoryKeyPassword')} length=${len('signingInMemoryKeyPassword')}"
-            }
-          }
-          EOF
-
-      - name: Publish all modules to Maven Central
+      # ── Publish all four artifacts to the Sonatype staging repo ────────────
+      # The convention plugin in buildSrc reads signing config from
+      # rootProject.findProperty(...), which sees ORG_GRADLE_PROJECT_* env
+      # vars. The SIGNING_KEY secret MUST be the full ASCII-armored private
+      # key text (with -----BEGIN/-----END markers and real newlines).
+      - name: Publish all modules to Sonatype
         run: |
           ./gradlew \
-            :composer:publishAndReleaseToMavenCentral \
-            :composer-compose:publishAndReleaseToMavenCentral \
-            :composer-fragment:publishAndReleaseToMavenCentral \
-            :composer-bom:publishAndReleaseToMavenCentral \
-            --no-configuration-cache --stacktrace
+            :composer:publishReleasePublicationToSonatypeRepository \
+            :composer-compose:publishReleasePublicationToSonatypeRepository \
+            :composer-fragment:publishReleasePublicationToSonatypeRepository \
+            :composer-bom:publishBomPublicationToSonatypeRepository \
+            --no-configuration-cache --stacktrace -PLIBRARY_VERSION=${{ steps.version.outputs.version }}
         env:
-          ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.version }}
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_SONATYPE_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_SONATYPE_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_PRIVATE_KEY }}
+
+      # ── Promote the staging repo into a "deployment" on the Portal ─────────
+      # Gradle uploaded the artifacts to a temporary staging repo bound to
+      # this runner's IP. The Portal won't show them until we call /manual/upload
+      # which moves them into a deployment that you then click "Publish" on.
+      - name: Upload deployment to Central Publisher Portal
+        if: success()
+        run: |
+          set -e
+          AUTH=$(echo -n "${{ secrets.MAVEN_CENTRAL_USERNAME }}:${{ secrets.MAVEN_CENTRAL_PASSWORD }}" | base64 -w0)
+          API="https://ossrh-staging-api.central.sonatype.com"
+
+          echo "── Searching for staging repository by client IP ──"
+          RESULT=$(curl -sSf -H "Authorization: Bearer $AUTH" "$API/manual/search/repositories?ip=client")
+          echo "$RESULT" | jq '.' || echo "$RESULT"
+          KEY=$(echo "$RESULT" | jq -r '.repositories[0].key // empty')
+
+          if [ -n "$KEY" ]; then
+            echo "── Promoting staging repo $KEY ──"
+            curl -sSf -X POST \
+              -H "Authorization: Bearer $AUTH" \
+              -H "Content-Type: application/json" \
+              "$API/manual/upload/repository/$KEY?publishing_type=user_managed"
+          else
+            echo "::warning::No staging repository found by IP. Falling back to defaultRepository upload for namespace $NAMESPACE"
+            HTTP=$(curl -sS -w "%{http_code}" -o /tmp/upload_resp -X POST \
+              -H "Authorization: Bearer $AUTH" \
+              -H "Content-Type: application/json" \
+              "$API/manual/upload/defaultRepository/$NAMESPACE?publishing_type=user_managed")
+            echo "HTTP $HTTP"
+            cat /tmp/upload_resp || true
+            if [ "$HTTP" != "200" ]; then
+              echo "::error::Upload failed with HTTP $HTTP"
+              exit 1
+            fi
+          fi
 
       # ── Archive the release AARs for audit ─────────────────────────────────
       - name: Upload release artifacts
@@ -244,7 +139,6 @@ jobs:
             composer-fragment/build/outputs/aar/composer-fragment-release.aar
           if-no-files-found: warn
 
-      # ── Print a summary to the Actions run page ─────────────────────────────
       - name: Write job summary
         if: always()
         run: |
@@ -256,5 +150,6 @@ jobs:
           echo "| Version | \`${{ steps.version.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Triggered by | \`${{ github.event_name }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Artifacts | \`composer\`, \`composer-compose\`, \`composer-fragment\`, \`composer-bom\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Group | \`io.github.debdutsaha\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Maven Central | [View namespace](https://central.sonatype.com/namespace/io.github.debdutsaha) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Group | \`${NAMESPACE}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Next step:** open [central.sonatype.com/publishing](https://central.sonatype.com/publishing), find the new deployment, and click **Publish**." >> $GITHUB_STEP_SUMMARY
