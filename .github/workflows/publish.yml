@@ -180,18 +180,20 @@ jobs:
           tail -n1 "$RUNNER_TEMP/key.asc"
           wc -l "$RUNNER_TEMP/key.asc"
 
-          # Stage Gradle properties in $GRADLE_USER_HOME. The key MUST be on a
-          # single line with literal "\n" escape sequences — java.util.Properties
-          # decodes those back into real newlines, but its backslash-newline
-          # *continuation* syntax instead JOINS lines and DROPS the newline,
-          # which corrupts armored PGP keys.
-          mkdir -p "$GRADLE_USER_HOME"
+          # Write to the PROJECT root gradle.properties (highest file precedence
+          # after -P / env vars) so no cache restore or init script can shadow
+          # it. The key value MUST be one physical line with literal "\n" escape
+          # sequences — java.util.Properties decodes those back to real newlines,
+          # while its backslash-newline *continuation* syntax JOINS lines and
+          # DROPS the newline, which corrupts armored PGP keys.
           KEY_ESCAPED=$(awk 'BEGIN{ORS=""} {print $0 "\\n"}' "$RUNNER_TEMP/key.asc")
           {
+            echo ""
+            echo "# injected by publish workflow — do not commit"
             echo "signingInMemoryKeyId=$KEY_SHORT_ID"
             echo "signingInMemoryKeyPassword=$SIGNING_KEY_PASSWORD"
             echo "signingInMemoryKey=$KEY_ESCAPED"
-          } >> "$GRADLE_USER_HOME/gradle.properties"
+          } >> "$GITHUB_WORKSPACE/gradle.properties"
 
           echo "── gradle.properties (key value masked) ────────"
           grep -c '^signingInMemoryKey=' "$HOME/.gradle/gradle.properties" || true
@@ -199,6 +201,23 @@ jobs:
 
           # Wipe the on-disk armored copy now that it's in gradle.properties
           rm -f "$RUNNER_TEMP/key.asc"
+
+      - name: Verify Gradle can see signing properties
+        run: |
+          ./gradlew -q :composer-bom:properties --no-configuration-cache \
+            | grep -E '^signingInMemoryKey(Id)?:' || true
+          # Print only presence + length, never the value itself.
+          ./gradlew -q --no-configuration-cache -I /dev/stdin help <<'EOF'
+          allprojects {
+            afterEvaluate {
+              def has = { name -> project.findProperty(name) != null }
+              def len = { name -> (project.findProperty(name) as String)?.length() ?: 0 }
+              println "[verify] ${project.path} signingInMemoryKey present=${has('signingInMemoryKey')} length=${len('signingInMemoryKey')}"
+              println "[verify] ${project.path} signingInMemoryKeyId present=${has('signingInMemoryKeyId')} length=${len('signingInMemoryKeyId')}"
+              println "[verify] ${project.path} signingInMemoryKeyPassword present=${has('signingInMemoryKeyPassword')} length=${len('signingInMemoryKeyPassword')}"
+            }
+          }
+          EOF
 
       - name: Publish all modules to Maven Central
         run: |
