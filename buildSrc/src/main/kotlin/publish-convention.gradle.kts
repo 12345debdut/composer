@@ -2,18 +2,18 @@
  * Precompiled script plugin for publishing Android library modules to Maven
  * Central via the Central Publisher Portal (ossrh-staging-api.central.sonatype.com).
  *
- * Supports two signing modes:
- *   - Mode A (local): binary keyring file via signing.keyFile / signing.secretKeyRingFile
- *   - Mode B (CI):    in-memory ASCII-armored key via signingInMemoryKey
+ * Structure mirrors the anchor-di publishing playbook §5.2 verbatim, with
+ * one Android-specific addition: the "release" MavenPublication is created
+ * inside afterEvaluate (because AGP's "release" SoftwareComponent only
+ * exists post-evaluate). Everything else — POM configureEach at top level,
+ * useInMemoryPgpKeys at top level, signing.sign(publications) inside
+ * afterEvaluate — is identical to the playbook.
  *
  * Apply via: apply(plugin = "publish-convention")
  *
  * The module's own build.gradle.kts must:
- *   - Apply the Android library plugin
+ *   - Apply com.android.library
  *   - Declare android { publishing { singleVariant("release") { withSourcesJar() } } }
- *
- * This convention plugin then registers the "release" MavenPublication, configures
- * its POM, hooks up the Sonatype repository, and wires signing.
  */
 
 val libraryGroup: String =
@@ -55,9 +55,9 @@ val pomInceptionYear: String =
 plugins.apply("maven-publish")
 
 // ── Signing config — RESOLVED FROM ROOT PROJECT ─────────────────────────────
-// This is critical: subprojects often cannot see ~/.gradle/gradle.properties
-// directly. Looking up via rootProject.findProperty() guarantees we find the
-// values. Causes the cryptic "no configured signatory" error otherwise.
+// Subprojects often cannot see ~/.gradle/gradle.properties directly. Looking
+// up via rootProject.findProperty() guarantees the values are visible. This
+// is the cause of the cryptic "no configured signatory" error otherwise.
 val root = rootProject
 
 val signingKeyId: String? =
@@ -86,12 +86,11 @@ val keyFileAbsolutePath: String? =
         if (file.exists()) file.absolutePath else null
     }
 
-val signingKeyContent: String? =
-    (root.findProperty("signingInMemoryKey") as? String)?.ifBlank { null }
-        ?: System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey")?.ifBlank { null }
-
 val hasSigningKeyFromFile =
     keyFileAbsolutePath != null && signingKeyId != null && signingPassword != null
+val signingKeyContent: String? =
+    (root.findProperty("signingInMemoryKey") as? String)?.takeIf { it.isNotBlank() }
+        ?: System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey")?.takeIf { it.isNotBlank() }
 val hasSigningKeyFromContent = signingKeyContent != null && signingPassword != null
 val hasSigningKey = hasSigningKeyFromFile || hasSigningKeyFromContent
 
@@ -105,21 +104,6 @@ if (hasSigningKey) {
         project.extra["signing.secretKeyRingFile"] = keyFileAbsolutePath!!
     }
     plugins.apply("signing")
-
-    // Configure the signatory IMMEDIATELY (at script-evaluation time, not in
-    // afterEvaluate). The signing plugin needs the signatory present before
-    // any sign task is requested. Doing this in afterEvaluate is a known
-    // source of "no signatures uploaded" because by then the publish task
-    // graph snapshot has already been built.
-    val signingExtEarly =
-        project.extensions.getByType<org.gradle.plugins.signing.SigningExtension>()
-    if (hasSigningKeyFromContent) {
-        if (signingKeyId != null) {
-            signingExtEarly.useInMemoryPgpKeys(signingKeyId, signingKeyContent!!, signingPassword!!)
-        } else {
-            signingExtEarly.useInMemoryPgpKeys(signingKeyContent!!, signingPassword!!)
-        }
-    }
 }
 
 // ── Sonatype credentials (Central Portal user token) ────────────────────────
@@ -130,8 +114,8 @@ val sonatypePassword: String? =
     (project.findProperty("SONATYPE_PASSWORD") as? String)?.ifBlank { null }
         ?: System.getenv("ORG_GRADLE_PROJECT_SONATYPE_PASSWORD")?.ifBlank { null }
 
-// Maven Central requires a javadoc JAR for every publication. We register an
-// empty one — Dokka can replace it later as a quality improvement.
+// Maven Central requires a javadoc JAR for every publication. Use an empty
+// JAR until Dokka is wired up as a quality improvement.
 val emptyJavadocJar =
     project.tasks.register<Jar>("emptyJavadocJar") {
         archiveClassifier.set("javadoc")
@@ -150,58 +134,12 @@ project.extensions.configure<org.gradle.api.publish.PublishingExtension> {
         }
         mavenLocal()
     }
-}
-
-// ── Sign EVERY publication, current and future ──────────────────────────────
-// Use publications.all { signingExt.sign(this) } at top level — this is the
-// canonical Gradle pattern for reacting to current AND future publications.
-// When AGP / our afterEvaluate block creates the "release" publication
-// later, the closure fires and a Sign task is created bound to that exact
-// publication BEFORE the publish task graph is finalized. This is the
-// difference between .asc files being uploaded vs. Sonatype rejecting with
-// "Missing signature for file".
-if (hasSigningKey) {
-    val signingExtLive =
-        project.extensions.getByType<org.gradle.plugins.signing.SigningExtension>()
-    val publishingLive =
-        project.extensions.getByType<org.gradle.api.publish.PublishingExtension>()
-    publishingLive.publications.all {
-        signingExtLive.sign(this)
-        project.logger.lifecycle(
-            "[publish-convention] sign task wired for publication '${this.name}' in ${project.path}",
-        )
-    }
-}
-
-// Android library publications must be created AFTER AGP evaluates the
-// project (the "release" software component only exists post-evaluate).
-// Use eager `create` (not lazy `register`) so the publication is realized
-// immediately and signing.sign(publication) can wire a Sign task to it
-// in the same afterEvaluate pass — otherwise the Sign task is missing
-// from the publish task graph and no .asc files are uploaded.
-project.afterEvaluate {
-    val publishing =
-        project.extensions.getByType<org.gradle.api.publish.PublishingExtension>()
-
-    val releaseComponent = project.components.findByName("release")
-    val releasePublication: org.gradle.api.publish.maven.MavenPublication? =
-        if (releaseComponent != null) {
-            (publishing.publications.findByName("release") as? org.gradle.api.publish.maven.MavenPublication)
-                ?: publishing.publications.create(
-                    "release",
-                    org.gradle.api.publish.maven.MavenPublication::class.java,
-                ).apply { from(releaseComponent) }
-        } else {
-            null
-        }
-
-    publishing.publications.withType<org.gradle.api.publish.maven.MavenPublication>().configureEach {
+    publications.withType<org.gradle.api.publish.maven.MavenPublication>().configureEach {
         artifact(emptyJavadocJar)
         groupId = libraryGroup
-        artifactId = project.name
         version = libraryVersion
         pom {
-            name.set(pomName)
+            name.set("$pomName - $artifactId")
             description.set(pomDescription)
             url.set(pomUrl)
             inceptionYear.set(pomInceptionYear)
@@ -227,12 +165,49 @@ project.afterEvaluate {
             }
         }
     }
+}
 
-    // Belt-and-braces: ensure every publish-to-repository task depends on
-    // every sign-publication task. Avoids "uses output of task without
-    // declaring dependency" when extra artifacts (empty javadoc jar) are
-    // attached lazily.
-    if (hasSigningKey && releasePublication != null) {
+// Register signing + fix sign/publish task ordering in afterEvaluate.
+// (Mirrors playbook §5.2 verbatim. The Android-specific addition is the
+// publications.create("release") block, because AGP's release component
+// only exists post-evaluate.)
+if (hasSigningKey) {
+    if (hasSigningKeyFromContent) {
+        project.extensions.configure<org.gradle.plugins.signing.SigningExtension> {
+            val keyId = signingKeyId?.takeIf { it.isNotBlank() }
+            if (keyId != null) {
+                useInMemoryPgpKeys(keyId, signingKeyContent!!, signingPassword!!)
+            } else {
+                useInMemoryPgpKeys(signingKeyContent!!, signingPassword!!)
+            }
+        }
+    }
+    project.afterEvaluate {
+        // ── Android-specific: create the release MavenPublication ──────────
+        // KMP/JVM auto-register publications; Android does not. Create it
+        // here BEFORE signing.sign(publications) is called so the live
+        // collection includes it when the signing listener iterates.
+        val publishingExt =
+            project.extensions.getByType<org.gradle.api.publish.PublishingExtension>()
+        val releaseComponent = project.components.findByName("release")
+        if (releaseComponent != null && publishingExt.publications.findByName("release") == null) {
+            publishingExt.publications.create(
+                "release",
+                org.gradle.api.publish.maven.MavenPublication::class.java,
+            ).apply {
+                from(releaseComponent)
+            }
+        }
+
+        project.extensions.findByType<org.gradle.plugins.signing.SigningExtension>()?.let { signingExt ->
+            signingExt.sign(
+                project.extensions.getByType<org.gradle.api.publish.PublishingExtension>().publications,
+            )
+        }
+
+        // Ensure publish tasks depend on all sign tasks — prevents ordering
+        // failures when publications include extra artifacts (the empty
+        // javadoc JAR).
         val signTasks =
             project.tasks.matching { it.name.startsWith("sign") && it.name.endsWith("Publication") }
         val publishToRepoTasks =
@@ -244,14 +219,14 @@ project.afterEvaluate {
         publishToRepoTasks.configureEach { dependsOn(signTasks) }
 
         project.logger.lifecycle(
-            "[publish-convention] signing wired: project=${project.path}, " +
-                "publication=release, mode=${if (hasSigningKeyFromContent) "in-memory" else "keyring-file"}",
-        )
-    } else if (!hasSigningKey) {
-        project.logger.warn(
-            "[publish-convention] no signing key configured for ${project.path} — " +
-                "uploads will be REJECTED by Maven Central. " +
-                "Set signingInMemoryKey/Id/Password (CI) or signing.keyFile (local).",
+            "[publish-convention] signing wired in ${project.path} " +
+                "(mode=${if (hasSigningKeyFromContent) "in-memory" else "keyring-file"})",
         )
     }
+} else {
+    project.logger.warn(
+        "[publish-convention] no signing key configured for ${project.path} — " +
+            "uploads will be REJECTED by Maven Central. " +
+            "Set signingInMemoryKey/Id/Password (CI) or signing.keyFile (local).",
+    )
 }
