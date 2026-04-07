@@ -56,5 +56,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/12345debdut/composerlibrary/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/12345debdut/composerlibrary/releases/tag/v1.0.0
+[Unreleased]: https://github.com/12345debdut/composer/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/12345debdut/composer/releases/tag/v1.0.0

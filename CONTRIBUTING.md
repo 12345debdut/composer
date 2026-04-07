@@ -52,8 +52,8 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/12345debdut/composerlibrary.git
-   cd composerlibrary
+   git clone https://github.com/12345debdut/composer.git
+   cd composer
    ```
 
 2. Open the project in Android Studio

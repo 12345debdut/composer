@@ -107,7 +107,7 @@ publishing {
             pom {
                 name.set("Composer BOM")
                 description.set("Bill of Materials for the Composer state management SDK")
-                url.set("https://github.com/12345debdut/composerlibrary")
+                url.set("https://github.com/12345debdut/composer")
                 inceptionYear.set("2025")
                 licenses {
                     license {
@@ -125,9 +125,9 @@ publishing {
                     }
                 }
                 scm {
-                    url.set("https://github.com/12345debdut/composerlibrary")
-                    connection.set("scm:git:git://github.com/12345debdut/composerlibrary.git")
-                    developerConnection.set("scm:git:ssh://git@github.com/12345debdut/composerlibrary.git")
+                    url.set("https://github.com/12345debdut/composer")
+                    connection.set("scm:git:git://github.com/12345debdut/composer.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/12345debdut/composer.git")
                 }
             }
         }

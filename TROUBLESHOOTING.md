@@ -86,4 +86,4 @@ implementation(platform("androidx.compose:compose-bom:2024.12.01"))
 
 ## Still stuck?
 
-Open an issue on GitHub: [New Issue](https://github.com/12345debdut/composerlibrary/issues/new/choose)
+Open an issue on GitHub: [New Issue](https://github.com/12345debdut/composer/issues/new/choose)

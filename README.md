@@ -14,7 +14,7 @@
 
 **A widget-scoped, unidirectional state management library for Android — built for screens that have *many independent things going on at once*.**
 
-[![CI](https://github.com/12345debdut/composerlibrary/actions/workflows/ci.yml/badge.svg)](https://github.com/12345debdut/composerlibrary/actions/workflows/ci.yml)
+[![CI](https://github.com/12345debdut/composer/actions/workflows/ci.yml/badge.svg)](https://github.com/12345debdut/composer/actions/workflows/ci.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.12345debdut/composer)](https://central.sonatype.com/artifact/io.github.12345debdut/composer)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-blue.svg)](https://kotlinlang.org)
 [![Android](https://img.shields.io/badge/Android-24+-green.svg)](https://developer.android.com)

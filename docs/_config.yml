@@ -1,16 +1,117 @@
-title: Composer Library
-description: Unidirectional state management for Android
-remote_theme: just-the-docs/just-the-docs
+# ─────────────────────────────────────────────────────────────────────────────
+# Site identity
+# ─────────────────────────────────────────────────────────────────────────────
+title: Composer
+description: >-
+  A widget-scoped, unidirectional state management library for Android —
+  built for screens that have many independent things going on at once.
+tagline: One Store per Widget. Composed at the top.
 
 url: https://12345debdut.github.io
-baseurl: /composerlibrary
+baseurl: /composer
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Theme — just-the-docs (pinned via github-pages gem in jekyll-build-pages@v1)
+# ─────────────────────────────────────────────────────────────────────────────
+remote_theme: just-the-docs/just-the-docs
+
+# Color scheme — switchable light/dark toggle in the top bar
+color_scheme: dark
+# Users can toggle light/dark at runtime via the top-right icon
+enable_copy_code_button: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Navigation
+# ─────────────────────────────────────────────────────────────────────────────
+# Order of top-level pages in the left sidebar is driven by each page's
+# nav_order front matter. We also surface a few external quick-links in the
+# top-right corner.
 aux_links:
-  GitHub: https://github.com/12345debdut/composerlibrary
-  Maven Central: https://central.sonatype.com/artifact/io.github.12345debdut/composer
+  "⭐ Star on GitHub": https://github.com/12345debdut/composer
+  "📦 Maven Central": https://central.sonatype.com/artifact/io.github.12345debdut/composer
+  "📖 API Reference": /composer/api/composer/
 
-footer_content: "Copyright &copy; 2024 Debdut Saha. Licensed under Apache 2.0."
+aux_links_new_tab: true
 
+# Show "Edit this page on GitHub" link at the bottom of every doc
+gh_edit_link: true
+gh_edit_link_text: "Edit this page on GitHub"
+gh_edit_repository: "https://github.com/12345debdut/composer"
+gh_edit_branch: "main"
+gh_edit_source: docs
+gh_edit_view_mode: "tree"
+
+# Back-to-top floating button
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Search
+# ─────────────────────────────────────────────────────────────────────────────
 search_enabled: true
+search:
+  heading_level: 2
+  previews: 3
+  preview_words_before: 5
+  preview_words_after: 10
+  tokenizer_separator: /[\s/]+/
+  rel_url: true
+  button: false
 
-nav_external_links: []
+# ─────────────────────────────────────────────────────────────────────────────
+# Callouts — colored boxes for tips/warnings/notes
+# Use in markdown like:
+#   {: .note }
+#   > This is a note.
+# ─────────────────────────────────────────────────────────────────────────────
+callouts_level: quiet
+callouts:
+  highlight:
+    color: yellow
+  important:
+    title: Important
+    color: blue
+  new:
+    title: New
+    color: green
+  note:
+    title: Note
+    color: purple
+  warning:
+    title: Warning
+    color: red
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Mermaid diagram support — renders ```mermaid code blocks client-side
+# ─────────────────────────────────────────────────────────────────────────────
+mermaid:
+  version: "10.9.1"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Footer
+# ─────────────────────────────────────────────────────────────────────────────
+footer_content: >-
+  © 2024 Debdut Saha · Licensed under
+  <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> ·
+  Built with <a href="https://just-the-docs.com">Just the Docs</a>
+
+last_edit_timestamp: true
+last_edit_time_format: "%b %e, %Y"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Jekyll plugins (whitelisted under github-pages gem)
+# ─────────────────────────────────────────────────────────────────────────────
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Exclude files from the build
+# ─────────────────────────────────────────────────────────────────────────────
+exclude:
+  - "*.gemspec"
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
