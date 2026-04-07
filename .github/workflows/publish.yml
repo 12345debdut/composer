@@ -74,17 +74,34 @@ jobs:
       # ── Sanity check: confirm sign tasks exist for every module ────────────
       # If this prints zero matching tasks for any module, the convention
       # plugin's signing wire-up is broken and the upload will fail with
-      # "Missing signature for file" — fail fast here instead.
+      # "Missing signature for file" — fail fast here instead. Run WITHOUT -q
+      # so the [publish-convention] / [composer-bom] lifecycle logs are visible.
       - name: Verify signing tasks are configured
         run: |
-          set -e
+          set +e
+          MISSING=0
           for mod in composer composer-compose composer-fragment composer-bom; do
-            echo "── $mod tasks (sign + publish-to-repo) ──"
-            ./gradlew -q :$mod:tasks --all --no-configuration-cache \
-              | grep -E '^(sign[A-Za-z]*Publication|publish[A-Za-z]*PublicationToSonatypeRepository)\b' \
-              || { echo "::error::No sign or publish-to-repo tasks found for :$mod"; exit 1; }
+            echo "════════════════════════════════════════════════════════════════"
+            echo "── :$mod — full task list ──"
+            echo "════════════════════════════════════════════════════════════════"
+            ./gradlew :$mod:tasks --all --no-configuration-cache 2>&1 | tee /tmp/${mod}_tasks.log
+
+            echo
+            echo "── :$mod — filtering for sign / publish-to-repo tasks ──"
+            FOUND=$(grep -E '^(sign[A-Za-z]*Publication|publish[A-Za-z]*PublicationToSonatypeRepository|publish[A-Za-z]*PublicationToMavenLocal)' /tmp/${mod}_tasks.log || true)
+            if [ -z "$FOUND" ]; then
+              echo "::error::Module :$mod has NO sign* or publish*PublicationTo* tasks. Convention plugin failed to register them."
+              MISSING=1
+            else
+              echo "$FOUND"
+            fi
+
+            echo
+            echo "── :$mod — looking for [publish-convention] log lines ──"
+            grep -E '\[publish-convention\]|\[composer-bom\]' /tmp/${mod}_tasks.log || echo "(no convention log lines — signing block did not run)"
             echo
           done
+          if [ "$MISSING" = "1" ]; then exit 1; fi
         env:
           ORG_GRADLE_PROJECT_SONATYPE_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_SONATYPE_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
