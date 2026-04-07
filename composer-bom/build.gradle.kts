@@ -5,7 +5,7 @@ plugins {
 }
 
 val libraryGroup: String =
-    project.findProperty("LIBRARY_GROUP") as? String ?: "io.github.debdutsaha"
+    project.findProperty("LIBRARY_GROUP") as? String ?: "io.github.12345debdut"
 val libraryVersion: String =
     project.findProperty("LIBRARY_VERSION") as? String
         ?: project.findProperty("VERSION_NAME") as? String
@@ -20,9 +20,9 @@ javaPlatform {
 
 dependencies {
     constraints {
-        api("io.github.debdutsaha:composer:$libraryVersion")
-        api("io.github.debdutsaha:composer-compose:$libraryVersion")
-        api("io.github.debdutsaha:composer-fragment:$libraryVersion")
+        api("io.github.12345debdut:composer:$libraryVersion")
+        api("io.github.12345debdut:composer-compose:$libraryVersion")
+        api("io.github.12345debdut:composer-fragment:$libraryVersion")
     }
 }
 
@@ -112,7 +112,7 @@ publishing {
                 }
                 developers {
                     developer {
-                        id.set("debdutsaha")
+                        id.set("12345debdut")
                         name.set("Debdut Saha")
                         email.set("debdut.saha.1@gmail.com")
                         url.set("https://github.com/12345debdut")

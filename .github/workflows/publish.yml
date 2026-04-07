@@ -21,7 +21,7 @@ permissions:
   contents: read
 
 env:
-  NAMESPACE: io.github.debdutsaha
+  NAMESPACE: io.github.12345debdut
 
 jobs:
   publish:

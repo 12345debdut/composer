@@ -44,5 +44,5 @@ echo "Publishing all modules to Maven Central..."
 
 echo ""
 echo "Successfully published version $VERSION_NAME to Maven Central."
-echo "Verify at: https://central.sonatype.com/artifact/io.github.debdutsaha/composer"
+echo "Verify at: https://central.sonatype.com/artifact/io.github.12345debdut/composer"
 echo ""

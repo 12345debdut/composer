@@ -4,7 +4,7 @@
 # Usage:
 #   MAVEN_CENTRAL_USERNAME=<token-user> \
 #   MAVEN_CENTRAL_PASSWORD=<token-pass> \
-#   NAMESPACE=io.github.debdutsaha \
+#   NAMESPACE=io.github.12345debdut \
 #     ./upload-to-central-auth.sh
 #
 # Run this AFTER `./gradlew publishAllPublicationsToSonatypeRepository`
@@ -14,7 +14,7 @@ set -e
 
 USERNAME="${MAVEN_CENTRAL_USERNAME:?Set MAVEN_CENTRAL_USERNAME}"
 PASSWORD="${MAVEN_CENTRAL_PASSWORD:?Set MAVEN_CENTRAL_PASSWORD}"
-NAMESPACE="${NAMESPACE:?Set NAMESPACE (e.g. io.github.debdutsaha)}"
+NAMESPACE="${NAMESPACE:?Set NAMESPACE (e.g. io.github.12345debdut)}"
 
 AUTH=$(printf '%s:%s' "$USERNAME" "$PASSWORD" | base64)
 API="https://ossrh-staging-api.central.sonatype.com"
