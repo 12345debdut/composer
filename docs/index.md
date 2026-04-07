@@ -25,9 +25,9 @@ Composer provides a structured, scalable approach to managing UI state across mu
 
 | Artifact | Description |
 |----------|-------------|
-| `io.github.debdutsaha:composer` | Core library -- Stores, Actions, Composers, State |
-| `io.github.debdutsaha:composer-compose` | Jetpack Compose extensions (`collectAsState`, `CollectSideEffect`) |
-| `io.github.debdutsaha:composer-bom` | BOM -- manages versions for both artifacts |
+| `io.github.12345debdut:composer` | Core library -- Stores, Actions, Composers, State |
+| `io.github.12345debdut:composer-compose` | Jetpack Compose extensions (`collectAsState`, `CollectSideEffect`) |
+| `io.github.12345debdut:composer-bom` | BOM -- manages versions for both artifacts |
 
 ## Requirements
 

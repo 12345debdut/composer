@@ -38,11 +38,26 @@ jobs:
           source: docs
           destination: ./_site
 
+      - name: Fix _site ownership
+        # jekyll-build-pages@v1 runs in a Docker container as root, so _site
+        # is owned by UID 0 and the next step (running as the runner user)
+        # cannot write into it. Reclaim ownership before copying Dokka output.
+        run: sudo chown -R "$USER:$USER" _site
+
       - name: Copy Dokka API docs into site
         run: |
+          set -e
           mkdir -p _site/api/composer _site/api/composer-compose
-          cp -r composer/build/dokka/html/* _site/api/composer/
-          cp -r composer-compose/build/dokka/html/* _site/api/composer-compose/
+          if [ ! -d composer/build/dokka/html ]; then
+            echo "::error::composer/build/dokka/html not found — dokkaHtml did not produce output"
+            exit 1
+          fi
+          if [ ! -d composer-compose/build/dokka/html ]; then
+            echo "::error::composer-compose/build/dokka/html not found — dokkaHtml did not produce output"
+            exit 1
+          fi
+          cp -r composer/build/dokka/html/. _site/api/composer/
+          cp -r composer-compose/build/dokka/html/. _site/api/composer-compose/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

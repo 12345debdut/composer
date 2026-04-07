@@ -7,7 +7,7 @@ baseurl: /composerlibrary
 
 aux_links:
   GitHub: https://github.com/12345debdut/composerlibrary
-  Maven Central: https://central.sonatype.com/artifact/io.github.debdutsaha/composer
+  Maven Central: https://central.sonatype.com/artifact/io.github.12345debdut/composer
 
 footer_content: "Copyright &copy; 2024 Debdut Saha. Licensed under Apache 2.0."
 
