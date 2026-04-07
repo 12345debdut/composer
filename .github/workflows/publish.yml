@@ -99,32 +99,58 @@ jobs:
         if: success()
         run: |
           set -e
-          AUTH=$(echo -n "${{ secrets.MAVEN_CENTRAL_USERNAME }}:${{ secrets.MAVEN_CENTRAL_PASSWORD }}" | base64 -w0)
+          AUTH=$(printf '%s:%s' "${{ secrets.MAVEN_CENTRAL_USERNAME }}" "${{ secrets.MAVEN_CENTRAL_PASSWORD }}" | base64 -w0)
           API="https://ossrh-staging-api.central.sonatype.com"
+
+          do_post() {
+            local url="$1"
+            local body_file=/tmp/upload_resp
+            local http
+            http=$(curl -sS -w "%{http_code}" -o "$body_file" -X POST \
+              -H "Authorization: Bearer $AUTH" \
+              -H "Content-Type: application/json" \
+              "$url")
+            echo "HTTP $http"
+            echo "── Response body ──"
+            cat "$body_file"; echo
+            echo "── End response ──"
+            if [ "$http" != "200" ] && [ "$http" != "201" ] && [ "$http" != "204" ]; then
+              return 1
+            fi
+          }
 
           echo "── Searching for staging repository by client IP ──"
           RESULT=$(curl -sSf -H "Authorization: Bearer $AUTH" "$API/manual/search/repositories?ip=client")
           echo "$RESULT" | jq '.' || echo "$RESULT"
           KEY=$(echo "$RESULT" | jq -r '.repositories[0].key // empty')
 
+          PROMOTED=0
           if [ -n "$KEY" ]; then
-            echo "── Promoting staging repo $KEY ──"
-            curl -sSf -X POST \
-              -H "Authorization: Bearer $AUTH" \
-              -H "Content-Type: application/json" \
-              "$API/manual/upload/repository/$KEY?publishing_type=user_managed"
-          else
-            echo "::warning::No staging repository found by IP. Falling back to defaultRepository upload for namespace $NAMESPACE"
-            HTTP=$(curl -sS -w "%{http_code}" -o /tmp/upload_resp -X POST \
-              -H "Authorization: Bearer $AUTH" \
-              -H "Content-Type: application/json" \
-              "$API/manual/upload/defaultRepository/$NAMESPACE?publishing_type=user_managed")
-            echo "HTTP $HTTP"
-            cat /tmp/upload_resp || true
-            if [ "$HTTP" != "200" ]; then
-              echo "::error::Upload failed with HTTP $HTTP"
-              exit 1
+            echo "── Promoting staging repo (raw key): $KEY ──"
+            # The key contains slashes which form path segments. Try the raw
+            # form first (most APIs accept it), then a URL-encoded form as a
+            # fallback. Whichever returns 2xx wins.
+            if do_post "$API/manual/upload/repository/$KEY?publishing_type=user_managed"; then
+              PROMOTED=1
+            else
+              ENCODED_KEY=$(printf '%s' "$KEY" | jq -sRr @uri)
+              echo "── Retrying with URL-encoded key: $ENCODED_KEY ──"
+              if do_post "$API/manual/upload/repository/$ENCODED_KEY?publishing_type=user_managed"; then
+                PROMOTED=1
+              fi
             fi
+          fi
+
+          if [ "$PROMOTED" != "1" ]; then
+            echo "── Falling back to defaultRepository upload for namespace $NAMESPACE ──"
+            if do_post "$API/manual/upload/defaultRepository/$NAMESPACE?publishing_type=user_managed"; then
+              PROMOTED=1
+            fi
+          fi
+
+          if [ "$PROMOTED" != "1" ]; then
+            echo "::error::Could not promote staging repo to a Central Portal deployment. See response body above for details."
+            exit 1
           fi
 
       # ── Archive the release AARs for audit ─────────────────────────────────
