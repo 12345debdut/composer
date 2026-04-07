@@ -71,9 +71,11 @@ jobs:
       - name: Check binary API compatibility
         run: ./gradlew :composer:apiCheck :composer-compose:apiCheck
 
-      # ── Publish all three artifacts atomically ──────────────────────────────
-      # SIGNING_KEY secret must be the base64 key body only (no headers, no
-      # newlines). See PUBLISHING.md for how to generate it.
+      # ── Publish all four artifacts atomically ──────────────────────────────
+      # SIGNING_KEY secret = full ASCII-armored GPG private key (with headers).
+      # SIGNING_KEY_ID secret = short or long GPG key ID (e.g. ABC123DEF456).
+      # The keyId selects which subkey to use AND switches Vanniktech to a more
+      # tolerant key parser that accepts the full armored block as-is.
       - name: Publish all modules to Maven Central
         run: |
           ./gradlew \
@@ -87,6 +89,7 @@ jobs:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
       # ── Archive the release AARs for audit ─────────────────────────────────
