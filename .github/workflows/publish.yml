@@ -71,6 +71,39 @@ jobs:
       - name: Check binary API compatibility
         run: ./gradlew :composer:apiCheck :composer-compose:apiCheck
 
+      # ── Diagnostic: confirm signing secrets are actually present ───────────
+      # Prints LENGTHS ONLY (never values) so we can see which secret is empty
+      # without leaking key material into logs. If any length is 0, the
+      # corresponding secret is missing or empty in repo Settings → Secrets.
+      - name: Diagnostic — verify signing secrets reach the runner
+        run: |
+          check() {
+            local name="$1"; local val="$2"
+            if [ -z "$val" ]; then
+              echo "::error::$name is EMPTY — secret missing or not exposed to this job"
+            else
+              echo "$name: length=${#val} (ok)"
+            fi
+          }
+          check "ORG_GRADLE_PROJECT_signingInMemoryKeyId"       "$ORG_GRADLE_PROJECT_signingInMemoryKeyId"
+          check "ORG_GRADLE_PROJECT_signingInMemoryKeyPassword" "$ORG_GRADLE_PROJECT_signingInMemoryKeyPassword"
+          check "ORG_GRADLE_PROJECT_signingInMemoryKey"         "$ORG_GRADLE_PROJECT_signingInMemoryKey"
+          check "ORG_GRADLE_PROJECT_SONATYPE_USERNAME"          "$ORG_GRADLE_PROJECT_SONATYPE_USERNAME"
+          check "ORG_GRADLE_PROJECT_SONATYPE_PASSWORD"          "$ORG_GRADLE_PROJECT_SONATYPE_PASSWORD"
+
+          # First/last 4 chars of the key — enough to confirm it's an
+          # ASCII-armored block (-----BEGIN...) without revealing material.
+          if [ -n "$ORG_GRADLE_PROJECT_signingInMemoryKey" ]; then
+            echo "Key first 30 chars: $(printf '%s' "$ORG_GRADLE_PROJECT_signingInMemoryKey" | head -c 30)"
+            echo "Key contains BEGIN marker: $(printf '%s' "$ORG_GRADLE_PROJECT_signingInMemoryKey" | grep -c 'BEGIN PGP')"
+          fi
+        env:
+          ORG_GRADLE_PROJECT_SONATYPE_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_SONATYPE_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_PRIVATE_KEY }}
+
       # ── Sanity check: confirm sign tasks exist for every module ────────────
       # If this prints zero matching tasks for any module, the convention
       # plugin's signing wire-up is broken and the upload will fail with
