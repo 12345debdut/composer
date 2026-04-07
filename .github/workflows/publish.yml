@@ -92,6 +92,45 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_PRIVATE_KEY }}
 
+      # ── Diagnostic: publish to MavenLocal and list produced files ──────────
+      # This proves whether the sign tasks are actually producing .asc files.
+      # If we see no .asc here, the signing wire-up is broken regardless of
+      # what Sonatype says later. Fail the job if any module is missing them.
+      - name: Diagnostic — publish to MavenLocal and inspect files
+        run: |
+          set -e
+          rm -rf "$HOME/.m2/repository/io/github/12345debdut" || true
+          ./gradlew \
+            :composer:publishReleasePublicationToMavenLocal \
+            :composer-compose:publishReleasePublicationToMavenLocal \
+            :composer-fragment:publishReleasePublicationToMavenLocal \
+            :composer-bom:publishBomPublicationToMavenLocal \
+            --no-configuration-cache --info -PLIBRARY_VERSION=${{ steps.version.outputs.version }} \
+            2>&1 | tail -200
+
+          echo
+          echo "── Files in ~/.m2/repository/io/github/12345debdut ──"
+          find "$HOME/.m2/repository/io/github/12345debdut" -type f | sort
+
+          echo
+          echo "── Counting .asc files per module ──"
+          MISSING=0
+          for mod in composer composer-compose composer-fragment composer-bom; do
+            ASC_COUNT=$(find "$HOME/.m2/repository/io/github/12345debdut/$mod" -name '*.asc' 2>/dev/null | wc -l)
+            echo "  $mod: $ASC_COUNT .asc files"
+            if [ "$ASC_COUNT" -eq 0 ]; then
+              echo "::error::Module $mod produced ZERO .asc signature files in MavenLocal — signing wire-up is broken."
+              MISSING=1
+            fi
+          done
+          if [ "$MISSING" = "1" ]; then exit 1; fi
+        env:
+          ORG_GRADLE_PROJECT_SONATYPE_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_SONATYPE_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_PRIVATE_KEY }}
+
       # ── Publish all four artifacts to the Sonatype staging repo ────────────
       # The convention plugin in buildSrc reads signing config from
       # rootProject.findProperty(...), which sees ORG_GRADLE_PROJECT_* env

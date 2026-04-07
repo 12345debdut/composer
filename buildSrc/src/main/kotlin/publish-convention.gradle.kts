@@ -105,6 +105,21 @@ if (hasSigningKey) {
         project.extra["signing.secretKeyRingFile"] = keyFileAbsolutePath!!
     }
     plugins.apply("signing")
+
+    // Configure the signatory IMMEDIATELY (at script-evaluation time, not in
+    // afterEvaluate). The signing plugin needs the signatory present before
+    // any sign task is requested. Doing this in afterEvaluate is a known
+    // source of "no signatures uploaded" because by then the publish task
+    // graph snapshot has already been built.
+    val signingExtEarly =
+        project.extensions.getByType<org.gradle.plugins.signing.SigningExtension>()
+    if (hasSigningKeyFromContent) {
+        if (signingKeyId != null) {
+            signingExtEarly.useInMemoryPgpKeys(signingKeyId, signingKeyContent!!, signingPassword!!)
+        } else {
+            signingExtEarly.useInMemoryPgpKeys(signingKeyContent!!, signingPassword!!)
+        }
+    }
 }
 
 // ── Sonatype credentials (Central Portal user token) ────────────────────────
@@ -134,6 +149,27 @@ project.extensions.configure<org.gradle.api.publish.PublishingExtension> {
             }
         }
         mavenLocal()
+    }
+}
+
+// ── Sign EVERY publication, current and future ──────────────────────────────
+// Use publications.all { signingExt.sign(this) } at top level — this is the
+// canonical Gradle pattern for reacting to current AND future publications.
+// When AGP / our afterEvaluate block creates the "release" publication
+// later, the closure fires and a Sign task is created bound to that exact
+// publication BEFORE the publish task graph is finalized. This is the
+// difference between .asc files being uploaded vs. Sonatype rejecting with
+// "Missing signature for file".
+if (hasSigningKey) {
+    val signingExtLive =
+        project.extensions.getByType<org.gradle.plugins.signing.SigningExtension>()
+    val publishingLive =
+        project.extensions.getByType<org.gradle.api.publish.PublishingExtension>()
+    publishingLive.publications.all {
+        signingExtLive.sign(this)
+        project.logger.lifecycle(
+            "[publish-convention] sign task wired for publication '${this.name}' in ${project.path}",
+        )
     }
 }
 
@@ -192,27 +228,11 @@ project.afterEvaluate {
         }
     }
 
-    // Wire signing on the realized release publication. Doing this on the
-    // specific publication object (not the live container) guarantees the
-    // Sign task is created before the Publish task graph is finalized.
+    // Belt-and-braces: ensure every publish-to-repository task depends on
+    // every sign-publication task. Avoids "uses output of task without
+    // declaring dependency" when extra artifacts (empty javadoc jar) are
+    // attached lazily.
     if (hasSigningKey && releasePublication != null) {
-        val signingExt =
-            project.extensions.getByType<org.gradle.plugins.signing.SigningExtension>()
-
-        if (hasSigningKeyFromContent) {
-            if (signingKeyId != null) {
-                signingExt.useInMemoryPgpKeys(signingKeyId, signingKeyContent!!, signingPassword!!)
-            } else {
-                signingExt.useInMemoryPgpKeys(signingKeyContent!!, signingPassword!!)
-            }
-        }
-
-        signingExt.sign(releasePublication)
-
-        // Belt-and-braces: ensure every publish-to-repository task depends on
-        // every sign-publication task. Avoids "uses output of task without
-        // declaring dependency" when extra artifacts (empty javadoc jar) are
-        // attached lazily.
         val signTasks =
             project.tasks.matching { it.name.startsWith("sign") && it.name.endsWith("Publication") }
         val publishToRepoTasks =
