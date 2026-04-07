@@ -137,74 +137,82 @@ project.extensions.configure<org.gradle.api.publish.PublishingExtension> {
     }
 }
 
-// Android library publications are registered AFTER AGP evaluates the project
-// (because the "release" software component only exists post-evaluate).
+// Android library publications must be created AFTER AGP evaluates the
+// project (the "release" software component only exists post-evaluate).
+// Use eager `create` (not lazy `register`) so the publication is realized
+// immediately and signing.sign(publication) can wire a Sign task to it
+// in the same afterEvaluate pass — otherwise the Sign task is missing
+// from the publish task graph and no .asc files are uploaded.
 project.afterEvaluate {
-    project.extensions.configure<org.gradle.api.publish.PublishingExtension> {
-        publications {
-            // Idempotent: register only if not already created
-            if (findByName("release") == null) {
-                val androidReleaseComponent = project.components.findByName("release")
-                if (androidReleaseComponent != null) {
-                    register<org.gradle.api.publish.maven.MavenPublication>("release") {
-                        from(androidReleaseComponent)
-                    }
+    val publishing =
+        project.extensions.getByType<org.gradle.api.publish.PublishingExtension>()
+
+    val releaseComponent = project.components.findByName("release")
+    val releasePublication: org.gradle.api.publish.maven.MavenPublication? =
+        if (releaseComponent != null) {
+            (publishing.publications.findByName("release") as? org.gradle.api.publish.maven.MavenPublication)
+                ?: publishing.publications.create(
+                    "release",
+                    org.gradle.api.publish.maven.MavenPublication::class.java,
+                ).apply { from(releaseComponent) }
+        } else {
+            null
+        }
+
+    publishing.publications.withType<org.gradle.api.publish.maven.MavenPublication>().configureEach {
+        artifact(emptyJavadocJar)
+        groupId = libraryGroup
+        artifactId = project.name
+        version = libraryVersion
+        pom {
+            name.set(pomName)
+            description.set(pomDescription)
+            url.set(pomUrl)
+            inceptionYear.set(pomInceptionYear)
+            licenses {
+                license {
+                    name.set(pomLicenseName)
+                    url.set(pomLicenseUrl)
+                    distribution.set("repo")
                 }
             }
-        }
-        publications.withType<org.gradle.api.publish.maven.MavenPublication>().configureEach {
-            artifact(emptyJavadocJar)
-            groupId = libraryGroup
-            artifactId = project.name
-            version = libraryVersion
-            pom {
-                name.set(pomName)
-                description.set(pomDescription)
-                url.set(pomUrl)
-                inceptionYear.set(pomInceptionYear)
-                licenses {
-                    license {
-                        name.set(pomLicenseName)
-                        url.set(pomLicenseUrl)
-                        distribution.set("repo")
-                    }
+            developers {
+                developer {
+                    id.set(pomDeveloperId)
+                    name.set(pomDeveloperName)
+                    if (pomDeveloperEmail.isNotBlank()) email.set(pomDeveloperEmail)
+                    url.set(pomDeveloperUrl)
                 }
-                developers {
-                    developer {
-                        id.set(pomDeveloperId)
-                        name.set(pomDeveloperName)
-                        if (pomDeveloperEmail.isNotBlank()) email.set(pomDeveloperEmail)
-                        url.set(pomDeveloperUrl)
-                    }
-                }
-                scm {
-                    url.set(pomScmUrl)
-                    connection.set(pomScmConnection)
-                    developerConnection.set(pomScmDevConnection)
-                }
+            }
+            scm {
+                url.set(pomScmUrl)
+                connection.set(pomScmConnection)
+                developerConnection.set(pomScmDevConnection)
             }
         }
     }
 
-    // Wire signing AFTER publications are registered. Use in-memory keys path
-    // for CI; the file-based path was already wired above via project.extra.
-    if (hasSigningKey) {
-        project.extensions.findByType<org.gradle.plugins.signing.SigningExtension>()?.let { signingExt ->
-            if (hasSigningKeyFromContent) {
-                if (signingKeyId != null) {
-                    signingExt.useInMemoryPgpKeys(signingKeyId, signingKeyContent!!, signingPassword!!)
-                } else {
-                    signingExt.useInMemoryPgpKeys(signingKeyContent!!, signingPassword!!)
-                }
+    // Wire signing on the realized release publication. Doing this on the
+    // specific publication object (not the live container) guarantees the
+    // Sign task is created before the Publish task graph is finalized.
+    if (hasSigningKey && releasePublication != null) {
+        val signingExt =
+            project.extensions.getByType<org.gradle.plugins.signing.SigningExtension>()
+
+        if (hasSigningKeyFromContent) {
+            if (signingKeyId != null) {
+                signingExt.useInMemoryPgpKeys(signingKeyId, signingKeyContent!!, signingPassword!!)
+            } else {
+                signingExt.useInMemoryPgpKeys(signingKeyContent!!, signingPassword!!)
             }
-            signingExt.sign(
-                project.extensions.getByType<org.gradle.api.publish.PublishingExtension>().publications,
-            )
         }
 
-        // Ensure publish tasks depend on all sign tasks — prevents the
-        // "uses output of task without declaring dependency" warning when
-        // publications include extra artifacts (the empty javadoc jar).
+        signingExt.sign(releasePublication)
+
+        // Belt-and-braces: ensure every publish-to-repository task depends on
+        // every sign-publication task. Avoids "uses output of task without
+        // declaring dependency" when extra artifacts (empty javadoc jar) are
+        // attached lazily.
         val signTasks =
             project.tasks.matching { it.name.startsWith("sign") && it.name.endsWith("Publication") }
         val publishToRepoTasks =
@@ -214,5 +222,16 @@ project.afterEvaluate {
                     it.name.endsWith("Repository")
             }
         publishToRepoTasks.configureEach { dependsOn(signTasks) }
+
+        project.logger.lifecycle(
+            "[publish-convention] signing wired: project=${project.path}, " +
+                "publication=release, mode=${if (hasSigningKeyFromContent) "in-memory" else "keyring-file"}",
+        )
+    } else if (!hasSigningKey) {
+        project.logger.warn(
+            "[publish-convention] no signing key configured for ${project.path} — " +
+                "uploads will be REJECTED by Maven Central. " +
+                "Set signingInMemoryKey/Id/Password (CI) or signing.keyFile (local).",
+        )
     }
 }

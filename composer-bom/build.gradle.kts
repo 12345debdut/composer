@@ -139,4 +139,12 @@ if (hasSigningKey) {
         }
         sign(publishing.publications["bom"])
     }
+    logger.lifecycle(
+        "[composer-bom] signing wired: publication=bom, mode=${if (hasSigningKeyFromContent) "in-memory" else "keyring-file"}",
+    )
+} else {
+    logger.warn(
+        "[composer-bom] no signing key configured — uploads will be REJECTED by Maven Central. " +
+            "Set signingInMemoryKey/Id/Password (CI) or signing.keyFile (local).",
+    )
 }
