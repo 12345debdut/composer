@@ -48,6 +48,17 @@ jobs:
             exit 1
           fi
 
+          # Drift guard: when triggered by a Release, the tag and the
+          # LIBRARY_VERSION in gradle.properties MUST match. This catches
+          # the common mistake of bumping the tag without bumping the file.
+          if [ "${{ github.event_name }}" = "release" ]; then
+            FILE_VERSION=$(grep "^LIBRARY_VERSION=" gradle.properties | cut -d'=' -f2)
+            if [ "$VERSION" != "$FILE_VERSION" ]; then
+              echo "::error::Tag version '$VERSION' does not match LIBRARY_VERSION='$FILE_VERSION' in gradle.properties. Bump gradle.properties before tagging."
+              exit 1
+            fi
+          fi
+
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Resolved publish version: $VERSION"
 
@@ -273,7 +284,7 @@ jobs:
             composer/build/outputs/aar/composer-release.aar
             composer-compose/build/outputs/aar/composer-compose-release.aar
             composer-fragment/build/outputs/aar/composer-fragment-release.aar
-          if-no-files-found: warn
+          if-no-files-found: error
 
       - name: Write job summary
         if: always()

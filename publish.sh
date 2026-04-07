@@ -1,48 +1,42 @@
 #!/bin/bash
 
-# Publishing script for Composer Library
-# Publishes all three artifacts (composer, composer-compose, composer-bom) to Maven Central.
+# Local publishing script for Composer Library.
+# Publishes all four artifacts (composer, composer-compose, composer-fragment,
+# composer-bom) to the Sonatype Central Portal staging repo. After this
+# completes, run upload-to-central-auth.sh to promote the staging repo into
+# a Central Portal deployment, then click "Publish" on
+# https://central.sonatype.com/publishing.
+#
+# Required local config in ~/.gradle/gradle.properties (NEVER commit):
+#   signingInMemoryKeyId=<8-char hex key id>
+#   signingInMemoryKeyPassword=<gpg passphrase>
+#   signingInMemoryKey=<full ASCII-armored private key with real newlines>
+#   SONATYPE_USERNAME=<central portal user token name>
+#   SONATYPE_PASSWORD=<central portal user token secret>
 
 set -e
 
-echo "Publishing Composer Library to Maven Central"
-echo ""
+VERSION_NAME=$(grep "^LIBRARY_VERSION=" gradle.properties | cut -d'=' -f2)
+echo "── Publishing Composer Library v$VERSION_NAME to Sonatype ──"
+echo
 
-# Verify local.properties has credentials (for local publishing)
-if [ -f "local.properties" ]; then
-    if ! grep -q "mavenCentralUsername" local.properties; then
-        echo "Warning: mavenCentralUsername not found in local.properties."
-        echo "Add Maven Central credentials to local.properties or export them as environment variables:"
-        echo "  ORG_GRADLE_PROJECT_mavenCentralUsername=..."
-        echo "  ORG_GRADLE_PROJECT_mavenCentralPassword=..."
-        echo "  ORG_GRADLE_PROJECT_signingInMemoryKey=..."
-        echo "  ORG_GRADLE_PROJECT_signingInMemoryKeyPassword=..."
-        echo ""
-    fi
-fi
-
-# Load VERSION_NAME from gradle.properties
-VERSION_NAME=$(grep "^VERSION_NAME=" gradle.properties | cut -d'=' -f2)
-echo "Version: $VERSION_NAME"
-echo ""
-
-# Run tests
-echo "Running tests..."
+echo "── Running unit tests ──"
 ./gradlew :composer:test :composer-compose:test
 
-# Check binary API compatibility
-echo "Checking binary API compatibility..."
+echo "── Checking binary API compatibility ──"
 ./gradlew :composer:apiCheck :composer-compose:apiCheck
 
-# Publish all three modules atomically
-echo "Publishing all modules to Maven Central..."
+echo "── Publishing all four modules to Sonatype staging repo ──"
 ./gradlew \
-    :composer:publishAndReleaseToMavenCentral \
-    :composer-compose:publishAndReleaseToMavenCentral \
-    :composer-bom:publishAndReleaseToMavenCentral \
+    :composer:publishReleasePublicationToSonatypeRepository \
+    :composer-compose:publishReleasePublicationToSonatypeRepository \
+    :composer-fragment:publishReleasePublicationToSonatypeRepository \
+    :composer-bom:publishBomPublicationToSonatypeRepository \
     --no-configuration-cache
 
-echo ""
-echo "Successfully published version $VERSION_NAME to Maven Central."
-echo "Verify at: https://central.sonatype.com/artifact/io.github.12345debdut/composer"
-echo ""
+echo
+echo "── Upload complete ──"
+echo "Next steps:"
+echo "  1. Run ./upload-to-central-auth.sh to promote the staging repo"
+echo "  2. Open https://central.sonatype.com/publishing"
+echo "  3. Find the new deployment and click 'Publish'"

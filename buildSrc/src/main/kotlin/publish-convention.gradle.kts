@@ -114,12 +114,25 @@ val sonatypePassword: String? =
     (project.findProperty("SONATYPE_PASSWORD") as? String)?.ifBlank { null }
         ?: System.getenv("ORG_GRADLE_PROJECT_SONATYPE_PASSWORD")?.ifBlank { null }
 
-// Maven Central requires a javadoc JAR for every publication. Use an empty
-// JAR until Dokka is wired up as a quality improvement.
-val emptyJavadocJar =
-    project.tasks.register<Jar>("emptyJavadocJar") {
+// Maven Central requires a javadoc JAR for every publication. If the module
+// applies the Dokka plugin we attach a real javadoc JAR built from Dokka's
+// HTML output; otherwise we fall back to an empty JAR (Central accepts it).
+val javadocJar =
+    project.tasks.register<Jar>("composerJavadocJar") {
         archiveClassifier.set("javadoc")
+        val dokkaTask = project.tasks.findByName("dokkaHtml")
+        if (dokkaTask != null) {
+            dependsOn(dokkaTask)
+            from(dokkaTask.outputs)
+        }
     }
+
+// Reproducible archives — strip timestamps and force stable file ordering so
+// the same source produces byte-identical AAR/JAR/POM artifacts across runs.
+project.tasks.withType<AbstractArchiveTask>().configureEach {
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
+}
 
 project.extensions.configure<org.gradle.api.publish.PublishingExtension> {
     repositories {
@@ -135,7 +148,7 @@ project.extensions.configure<org.gradle.api.publish.PublishingExtension> {
         mavenLocal()
     }
     publications.withType<org.gradle.api.publish.maven.MavenPublication>().configureEach {
-        artifact(emptyJavadocJar)
+        artifact(javadocJar)
         groupId = libraryGroup
         version = libraryVersion
         pom {

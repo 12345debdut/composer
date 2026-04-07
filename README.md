@@ -5,7 +5,7 @@
 **Unidirectional state management for Android**
 
 [![CI](https://github.com/12345debdut/composerlibrary/actions/workflows/ci.yml/badge.svg)](https://github.com/12345debdut/composerlibrary/actions/workflows/ci.yml)
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.debdutsaha/composer)](https://central.sonatype.com/artifact/io.github.debdutsaha/composer)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.12345debdut/composer)](https://central.sonatype.com/artifact/io.github.12345debdut/composer)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-blue.svg)](https://kotlinlang.org)
 [![Android](https://img.shields.io/badge/Android-24+-green.svg)](https://developer.android.com)
 [![License](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](LICENSE)
@@ -24,9 +24,10 @@ Composer is a Store-based state management library for Android. Each widget gets
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation(platform("io.github.debdutsaha:composer-bom:1.0.0"))
-    implementation("io.github.debdutsaha:composer")
-    implementation("io.github.debdutsaha:composer-compose") // optional: Compose extensions
+    implementation(platform("io.github.12345debdut:composer-bom:1.0.0"))
+    implementation("io.github.12345debdut:composer")
+    implementation("io.github.12345debdut:composer-compose")  // optional: Compose extensions
+    implementation("io.github.12345debdut:composer-fragment") // optional: Fragment helpers
 }
 ```
 
@@ -83,10 +84,60 @@ fun CounterScreen(vm: CounterViewModel) {
 
 | Artifact | Purpose |
 |----------|---------|
-| `io.github.debdutsaha:composer` | Core -- Stores, Actions, Composers, State |
-| `io.github.debdutsaha:composer-compose` | Jetpack Compose extensions |
-| `io.github.debdutsaha:composer-fragment` | Fragment base classes for View-based UI |
-| `io.github.debdutsaha:composer-bom` | BOM -- version alignment for all |
+| `io.github.12345debdut:composer` | Core -- Stores, Actions, Composers, State |
+| `io.github.12345debdut:composer-compose` | Jetpack Compose extensions |
+| `io.github.12345debdut:composer-fragment` | Fragment base classes for View-based UI |
+| `io.github.12345debdut:composer-bom` | BOM -- version alignment for all |
+
+## Publishing (maintainer runbook)
+
+Composer publishes to **Maven Central** via the **Central Publisher Portal**
+(`ossrh-staging-api.central.sonatype.com`). The flow is automated by
+`.github/workflows/publish.yml`.
+
+### Required GitHub repo secrets
+
+Configure under **Settings → Secrets and variables → Actions**. All five are
+mandatory; the workflow's diagnostic step fails fast if any are missing.
+
+| Secret name | Value |
+|---|---|
+| `MAVEN_CENTRAL_USERNAME` | Central Portal user token **name** (https://central.sonatype.com → Account → Generate User Token) |
+| `MAVEN_CENTRAL_PASSWORD` | Central Portal user token **secret** |
+| `SIGNING_KEY_ID` | Last 8 hex chars of the GPG key used for signing |
+| `SIGNING_PASSWORD` | Passphrase of that GPG key |
+| `GPG_PRIVATE_KEY` | Full ASCII-armored private key (`gpg --armor --export-secret-keys KEYID`), including `-----BEGIN/-----END` markers and real newlines |
+
+### Release flow
+
+1. Bump `LIBRARY_VERSION` (and `VERSION_NAME`) in `gradle.properties`
+2. Commit and push to `main`
+3. Create a GitHub Release with tag `vX.Y.Z` — the tag and `gradle.properties`
+   version **must match** or the workflow fails
+4. Workflow runs: tests → API check → publish all four modules to staging →
+   promote staging into a Central Portal deployment
+5. Open https://central.sonatype.com/publishing, find the new deployment,
+   click **Publish**
+
+### Modules published
+
+- `io.github.12345debdut:composer`
+- `io.github.12345debdut:composer-compose`
+- `io.github.12345debdut:composer-fragment`
+- `io.github.12345debdut:composer-bom`
+
+### Local publish (dry run to MavenLocal)
+
+```bash
+./gradlew \
+  :composer:publishReleasePublicationToMavenLocal \
+  :composer-compose:publishReleasePublicationToMavenLocal \
+  :composer-fragment:publishReleasePublicationToMavenLocal \
+  :composer-bom:publishBomPublicationToMavenLocal
+```
+
+Local publishing requires `signingInMemoryKey/Id/Password` and
+`SONATYPE_USERNAME/PASSWORD` in `~/.gradle/gradle.properties` (never commit).
 
 ## Contributing
 

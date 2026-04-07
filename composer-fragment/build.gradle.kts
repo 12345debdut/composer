@@ -37,10 +37,10 @@ android {
             withSourcesJar()
         }
     }
+}
 
-    kotlin {
-        explicitApi()
-    }
+kotlin {
+    explicitApi()
 }
 
 dependencies {

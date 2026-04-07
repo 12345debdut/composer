@@ -18,6 +18,12 @@ javaPlatform {
     allowDependencies()
 }
 
+// Reproducible archives — keep BOM byte-identical across runs.
+tasks.withType<AbstractArchiveTask>().configureEach {
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
+}
+
 dependencies {
     constraints {
         api("io.github.12345debdut:composer:$libraryVersion")
