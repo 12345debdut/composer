@@ -39,17 +39,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `CollectSideEffect()` — composable for safely collecting `UIComposerActionHolder` side effects via `LaunchedEffect`
 - `uiStateFlow` / `uiActionFlow` — direct `StateFlow` / `SharedFlow` access extensions
 
+#### `composer-fragment` — Fragment extensions module
+- `ListUIComposerFragment` — base Fragment for list-based screens with lifecycle-aware `repeatOnLifecycle` observation wired up
+- `ListUIComposerWithHeaderAndFooterFragment` — base Fragment for list screens with fixed header and footer widgets
+- `UIComposerSyntax` extensions for Fragment contexts: `dispatch()`, `observeAsState()`, `observeAction()`
+
 #### `composer-bom` — Bill of Materials
-- Single BOM artifact to manage consistent versions across `composer` and `composer-compose`
+- Single BOM artifact that manages consistent versions across `composer`, `composer-compose`, and `composer-fragment`
 
 #### Publishing & CI/CD
-- Maven Central publishing via Vanniktech Maven Publish plugin (`io.github.debdutsaha` group)
-- `composer`, `composer-compose`, and `composer-bom` published atomically on GitHub Release
+- Maven Central publishing via plain `maven-publish` + `signing` plugins, driven by a `buildSrc` precompiled script plugin (`publish-convention.gradle.kts`) for convention-sharing across all Android library modules
+- Published to Maven Central under the `io.github.12345debdut` group through the Sonatype **Central Publisher Portal** (`ossrh-staging-api.central.sonatype.com`)
+- All four artifacts (`composer`, `composer-compose`, `composer-fragment`, `composer-bom`) published atomically on GitHub Release
 - GitHub Actions CI: build + test + `apiCheck` for all library modules on every PR
-- GitHub Actions publish: tests + `apiCheck` gate before all three artifacts are published
-- JitPack support via `jitpack.yml`
-- Kotlin Explicit API mode enforced on both library modules
-- GPG signing for all Maven Central publications
+- GitHub Actions publish workflow: tests + `apiCheck` gate, tag-vs-`gradle.properties` version drift guard, and a diagnostic step that fails fast if any required signing secret is missing
+- GPG signing for all Maven Central publications via in-memory ASCII-armored key (`useInMemoryPgpKeys`)
+- Kotlin `explicitApi()` mode enforced on all three library modules
+- Reproducible archives (stripped timestamps, stable file ordering) so the same source produces byte-identical AAR/JAR/POM artifacts across builds
+- Real Dokka-generated javadoc JAR attached to publications when the module applies the Dokka plugin, empty javadoc JAR as fallback
+- GitHub Pages documentation site deployed via `docs.yml` workflow (Jekyll + just-the-docs theme + Mermaid diagrams)
 
 #### Sample app
 - Counter widget demonstrating `Store`, `ListDataComposerViewModel`, `ListUIComposerFragment`
