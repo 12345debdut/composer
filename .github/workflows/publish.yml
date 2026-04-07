@@ -64,6 +64,66 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # ── Diagnose signing key (no secrets leaked) ───────────────────────────
+      # Validates the SIGNING_KEY secret can actually be parsed by GPG itself
+      # BEFORE Gradle tries to use it. If gpg --import fails here, the key is
+      # malformed at the secret level (line endings, truncation, wrong format).
+      - name: Diagnose signing secrets
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          set -e
+          echo "── Secret presence ─────────────────────────────"
+          if [ -z "$SIGNING_KEY" ]; then
+            echo "FATAL: SIGNING_KEY secret is empty/unset"; exit 1
+          fi
+          if [ -z "$SIGNING_KEY_ID" ]; then
+            echo "WARN: SIGNING_KEY_ID is empty"
+          else
+            echo "SIGNING_KEY_ID length: ${#SIGNING_KEY_ID}"
+          fi
+          if [ -z "$SIGNING_KEY_PASSWORD" ]; then
+            echo "WARN: SIGNING_KEY_PASSWORD is empty"
+          fi
+
+          echo "── SIGNING_KEY shape ───────────────────────────"
+          echo "byte length: ${#SIGNING_KEY}"
+          echo "line count : $(printf '%s' "$SIGNING_KEY" | wc -l)"
+          FIRST_LINE=$(printf '%s' "$SIGNING_KEY" | head -n1)
+          LAST_LINE=$(printf '%s' "$SIGNING_KEY" | tail -n1)
+          echo "first line : $FIRST_LINE"
+          echo "last  line : $LAST_LINE"
+
+          # Detect format
+          if printf '%s' "$SIGNING_KEY" | head -n1 | grep -q "BEGIN PGP PRIVATE KEY BLOCK"; then
+            FORMAT="armored"
+          elif printf '%s' "$SIGNING_KEY" | base64 -d >/dev/null 2>&1; then
+            FORMAT="base64-binary"
+          else
+            FORMAT="unknown"
+          fi
+          echo "detected format: $FORMAT"
+
+          echo "── gpg --import dry run ────────────────────────"
+          mkdir -p "$RUNNER_TEMP/gpg"
+          chmod 700 "$RUNNER_TEMP/gpg"
+          export GNUPGHOME="$RUNNER_TEMP/gpg"
+          if [ "$FORMAT" = "armored" ]; then
+            printf '%s\n' "$SIGNING_KEY" > "$RUNNER_TEMP/key.asc"
+            gpg --batch --import "$RUNNER_TEMP/key.asc"
+          elif [ "$FORMAT" = "base64-binary" ]; then
+            printf '%s' "$SIGNING_KEY" | base64 -d > "$RUNNER_TEMP/key.gpg"
+            gpg --batch --import "$RUNNER_TEMP/key.gpg"
+          else
+            echo "FATAL: SIGNING_KEY is neither ASCII-armored nor valid base64"
+            echo "first 80 chars: $(printf '%s' "$SIGNING_KEY" | head -c 80)"
+            exit 1
+          fi
+          echo "── gpg --list-secret-keys ──────────────────────"
+          gpg --list-secret-keys --keyid-format LONG
+
       # ── Quality gates (must pass before any artifact is uploaded) ───────────
       - name: Run unit tests
         run: ./gradlew :composer:test :composer-compose:test
@@ -72,25 +132,44 @@ jobs:
         run: ./gradlew :composer:apiCheck :composer-compose:apiCheck
 
       # ── Publish all four artifacts atomically ──────────────────────────────
-      # SIGNING_KEY secret = full ASCII-armored GPG private key (with headers).
-      # SIGNING_KEY_ID secret = short or long GPG key ID (e.g. ABC123DEF456).
-      # The keyId selects which subkey to use AND switches Vanniktech to a more
-      # tolerant key parser that accepts the full armored block as-is.
+      # We deliberately AVOID the in-memory key path (signingInMemoryKey) here
+      # because BouncyCastle inside Gradle has long-standing bugs parsing
+      # ASCII-armored keys passed via env vars (gradle/gradle#15718). Instead
+      # we re-export the already-imported key as binary and feed it as binary
+      # to Vanniktech, which is the most reliable cross-module path (works
+      # uniformly for Android library + java-platform/BOM modules).
+      - name: Export imported key as binary for Gradle
+        id: export_key
+        env:
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          set -e
+          export GNUPGHOME="$RUNNER_TEMP/gpg"
+          KEY_ID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
+          echo "Using key id: $KEY_ID"
+          gpg --batch --yes --pinentry-mode loopback \
+              --passphrase "$SIGNING_KEY_PASSWORD" \
+              --export-secret-keys "$KEY_ID" \
+            | base64 -w0 > "$RUNNER_TEMP/key.b64"
+          echo "key_id=$KEY_ID" >> "$GITHUB_OUTPUT"
+          echo "key_b64_path=$RUNNER_TEMP/key.b64" >> "$GITHUB_OUTPUT"
+
       - name: Publish all modules to Maven Central
         run: |
+          SIGNING_KEY_B64=$(cat "${{ steps.export_key.outputs.key_b64_path }}")
           ./gradlew \
             :composer:publishAndReleaseToMavenCentral \
             :composer-compose:publishAndReleaseToMavenCentral \
             :composer-fragment:publishAndReleaseToMavenCentral \
             :composer-bom:publishAndReleaseToMavenCentral \
-            --no-configuration-cache
+            --no-configuration-cache \
+            -PsigningInMemoryKey="$SIGNING_KEY_B64" \
+            -PsigningInMemoryKeyId="${{ steps.export_key.outputs.key_id }}" \
+            -PsigningInMemoryKeyPassword="${{ secrets.SIGNING_KEY_PASSWORD }}"
         env:
           ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.version }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
       # ── Archive the release AARs for audit ─────────────────────────────────
       - name: Upload release artifacts
