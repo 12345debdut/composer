@@ -150,28 +150,48 @@ jobs:
           echo "Long  key id: $KEY_LONG_ID"
           echo "Short key id: $KEY_SHORT_ID"
 
-          gpg --batch --yes --pinentry-mode loopback \
-              --passphrase "$SIGNING_KEY_PASSWORD" \
+          # Sanity-check the passphrase value before passing it to gpg.
+          # If the passphrase starts with "-" or "lQdG" (base64 PGP magic) the
+          # caller has almost certainly stored the key material in the
+          # SIGNING_KEY_PASSWORD secret by mistake — fail loudly.
+          case "$SIGNING_KEY_PASSWORD" in
+            -*|lQdG*|*BEGIN*PGP*)
+              echo "FATAL: SIGNING_KEY_PASSWORD looks like key material, not a passphrase."
+              echo "       Update the GitHub secret to hold the passphrase only (or empty)."
+              exit 1 ;;
+          esac
+
+          # Pass passphrase via stdin (--passphrase-fd 0) so gpg never sees it
+          # as an argv element. Works for empty passphrases too.
+          printf '%s' "$SIGNING_KEY_PASSWORD" | gpg \
+              --batch --yes --pinentry-mode loopback \
+              --passphrase-fd 0 \
               --armor \
               --export-secret-keys "$KEY_LONG_ID" \
               > "$RUNNER_TEMP/key.asc"
+
+          if [ ! -s "$RUNNER_TEMP/key.asc" ]; then
+            echo "FATAL: gpg produced an empty armored export — passphrase wrong?"
+            exit 1
+          fi
 
           echo "── armored key sanity check ────────────────────"
           head -n1 "$RUNNER_TEMP/key.asc"
           tail -n1 "$RUNNER_TEMP/key.asc"
           wc -l "$RUNNER_TEMP/key.asc"
 
-          # Stage Gradle properties in $GRADLE_USER_HOME so multiline key
-          # value is parsed correctly. Backslash-escape every newline because
-          # java.util.Properties uses backslash-newline for line continuation.
-          mkdir -p "$HOME/.gradle"
+          # Stage Gradle properties in $GRADLE_USER_HOME. The key MUST be on a
+          # single line with literal "\n" escape sequences — java.util.Properties
+          # decodes those back into real newlines, but its backslash-newline
+          # *continuation* syntax instead JOINS lines and DROPS the newline,
+          # which corrupts armored PGP keys.
+          mkdir -p "$GRADLE_USER_HOME"
+          KEY_ESCAPED=$(awk 'BEGIN{ORS=""} {print $0 "\\n"}' "$RUNNER_TEMP/key.asc")
           {
             echo "signingInMemoryKeyId=$KEY_SHORT_ID"
             echo "signingInMemoryKeyPassword=$SIGNING_KEY_PASSWORD"
-            printf 'signingInMemoryKey='
-            awk 'NR>1{printf "\\\n"} {printf "%s", $0}' "$RUNNER_TEMP/key.asc"
-            printf '\n'
-          } >> "$HOME/.gradle/gradle.properties"
+            echo "signingInMemoryKey=$KEY_ESCAPED"
+          } >> "$GRADLE_USER_HOME/gradle.properties"
 
           echo "── gradle.properties (key value masked) ────────"
           grep -c '^signingInMemoryKey=' "$HOME/.gradle/gradle.properties" || true
